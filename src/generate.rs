@@ -2,33 +2,74 @@ use pulldown_cmark::{Event, Tag, CodeBlockKind, LinkType};
 use vertigo::{VDomElement, VDomText, VDomNode, node_attr::attr};
 use std::collections::VecDeque;
 
+use super::table_state::TableState;
+
 /// Converts an event iterator into Vertigo tree
 pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<VDomNode> {
     // Stack of children lists with current list on top
     let mut soc = VecDeque::new();
+    let mut table_state = TableState::default();
 
     // Drop most outer list on the bottom
     soc.push_front(vec![]);
 
     for event in events {
         let new_child = match event {
-            Event::Start(_tag) => {
+            Event::Start(tag) => {
                 soc.push_front(vec![]);
+                match tag {
+                    Tag::Table(als) => {
+                        table_state.soa.push_front(als);
+                    },
+                    Tag::TableHead => {
+                        if table_state.head {
+                            vertigo::log::error!("Already in table head, ")
+                        }
+                        table_state.head = true
+                    }
+                    _ => ()
+                }
                 None
             }
 
             Event::End(tag) => {
-                let children = soc.pop_front();
-                if let Some(children) = children {
-                    Some(generate_tag(tag, children))
+                if let Some(children) = soc.pop_front() {
+                    match tag {
+                        Tag::TableHead => {
+                            table_state.head = false;
+                            // Put head on stack
+                            soc.push_front(vec![generate_tag(tag, &mut table_state, children)]);
+                            // Put new layer for regular rows
+                            soc.push_front(vec![]);
+                            None
+                        }
+                        Tag::Table(_) => {
+                            // Regular rows from stack was popped first into children
+                            // Additionally pop head element into new table_children
+                            let mut table_children = soc.pop_front().unwrap_or_default();
+                            // Create tbody element and add to table children
+                            table_children.push(VDomElement::new("tbody", vec![], children).into());
+                            // Pop unused layer
+                            soc.pop_front();
+                            // Create table element with thead and tbody as children
+                            Some(generate_tag(tag, &mut table_state, table_children))
+                        }
+                        _ => Some(generate_tag(tag, &mut table_state, children))
+                    }
                 } else {
                     vertigo::log::error!("Dangling end tag {:?} in cmark parser", tag);
                     None
                 }
             },
 
-            Event::Text(text) =>
-                Some(VDomText::new(text.to_string()).into()),
+            Event::Text(text) => {
+                let trimmed_text = text.trim().to_string();
+                if trimmed_text.is_empty() {
+                    None
+                } else {
+                    Some(VDomText::new(text.trim().to_string()).into())
+                }
+            },
 
             Event::Code(text) => {
                 let children = vec![VDomText::new(text.to_string()).into()];
@@ -78,7 +119,7 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<VDomNode>
     })
 }
 
-fn generate_tag(tag: Tag, children: Vec<VDomNode>) -> VDomNode {
+fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<VDomNode>) -> VDomNode {
     match tag {
         Tag::Paragraph =>
             VDomElement::new("p", vec![], children).into(),
@@ -96,21 +137,33 @@ fn generate_tag(tag: Tag, children: Vec<VDomNode>) -> VDomNode {
             generate_el(&el, children)
         }
 
-        Tag::Table(_alignments) =>
-            // TODO:
-            VDomText::new("".to_string()).into(),
+        Tag::Table(_) => {
+            VDomElement::new(
+                "table",
+                vec![attr("border", "1")], // temporary
+                children
+            ).into()
+        }
 
         Tag::TableHead =>
-            // TODO:
-            VDomText::new("".to_string()).into(),
+            VDomElement::new(
+                "thead",
+                vec![],
+                vec![VDomElement::new("tr", vec![], children).into()],
+            ).into(),
 
         Tag::TableRow =>
-            // TODO:
-            VDomText::new("".to_string()).into(),
+            VDomElement::new("tr", vec![], children).into(),
 
-        Tag::TableCell =>
-            // TODO:
-            VDomText::new("".to_string()).into(),
+        Tag::TableCell => {
+            let attrs = if let Some(alignment) = table_state.alignment() {
+                vec![attr("align", alignment)]
+            } else {
+                vec![]
+            };
+            let el = if table_state.head { "th" } else { "td" };
+            VDomElement::new(el, attrs, children).into()
+        }
 
         Tag::BlockQuote =>
             generate_el("blockquote", children),
@@ -171,10 +224,10 @@ fn generate_codeblock(info: CodeBlockKind, children: Vec<VDomNode>) -> VDomNode 
         CodeBlockKind::Indented => vec![],
         CodeBlockKind::Fenced(info) => {
             let lang = info.split(' ').next();
-            if let Some(lang) = lang {
-                vec![attr("class", format!("language-{}", lang))]
-            } else {
-                vec![]
+            match lang {
+                Some("") |
+                None => vec![],
+                Some(lang) => vec![attr("class", format!("language-{}", lang))],
             }
         },
     };

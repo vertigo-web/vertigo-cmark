@@ -9,4 +9,11 @@ description = "Allows to render CommonMark inside Vertigo tree"
 [dependencies]
 pulldown-cmark = "0.8.0"
 # vertigo = "0.1.0-alpha.1"
-vertigo = { git = "https://github.com/vertigo-web/vertigo.git" }
+vertigo = { git = "https://github.com/vertigo-web/vertigo.git", branch="vertigo-testing" }
+# vertigo = { path = "../vertigo/crates/vertigo" }
+
+[dev-dependencies]
+vertigo-testing = { git = "https://github.com/vertigo-web/vertigo.git", branch="vertigo-testing" }
+vertigo-html = { git = "https://github.com/vertigo-web/vertigo.git", branch="vertigo-testing" }
+# vertigo-testing = { path = "../vertigo/crates/vertigo-testing" }
+# vertigo-html = { path = "../vertigo/crates/vertigo-html" }
