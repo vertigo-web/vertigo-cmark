@@ -1,14 +1,16 @@
 use super::to_vertigo;
 
-use vertigo_testing::{eq_els, EqResult};
-use vertigo_html::html;
+use vertigo::html;
 
 #[test]
 fn text() {
     let el1 = to_vertigo("foo bar");
-    let el2 = html! ("<div><p>foo bar</p></div>");
+    let el2 = html! { <div><p>"foo bar"</p></div> };
 
-    assert_eq!(eq_els(&el1, &el2), EqResult::Equal);
+    assert_eq!(
+        format!("{:?}", el1),
+        format!("{:?}", el2),
+    );
 }
 
 #[test]
@@ -27,17 +29,20 @@ example
 ```
     "#);
 
-    let el2 = html! (r#"
+    let el2 = html! {
         <div>
-            <h1>Heading 1</h1>
-            <p>foo</p>
+            <h1>"Heading 1"</h1>
+            <p>"foo"</p>
             <hr />
-            <p>bar</p>
-            <pre><code>example</code></pre>
+            <p>"bar"</p>
+            <pre><code>"example"</code></pre>
         </div>
-    "#);
+    };
 
-    assert_eq!(eq_els(&el1, &el2), EqResult::Equal);
+    assert_eq!(
+        format!("{:?}", el1),
+        format!("{:?}", el2),
+    );
 }
 
 #[test]
@@ -47,25 +52,29 @@ fn table_1() {
  baz|bim
 "##);
 
-    let el2 = html!(r#"
+    let el2 = html! {
         <div>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>foo</th>
-                        <th>bar</th>
+                        <th>"foo"</th>
+                        <th>"bar"</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>baz</td>
-                        <td>bim</td>
+                        <td>"baz"</td>
+                        <td>"bim"</td>
                     </tr>
                 </tbody>
             </table>
-        </div>"#);
+        </div>
+    };
 
-    assert_eq!(eq_els(&el1, &el2), EqResult::Equal);
+    assert_eq!(
+        format!("{:?}", el1),
+        format!("{:?}", el2),
+    );
 }
 
 #[test]
@@ -78,36 +87,39 @@ fn table_2() {
 | ```Inlines``` | __allowed__ |
 "##);
 
-    let el2 = html! (r#"
+    let el2 = html! {
         <div>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Head cell</th>
-                        <th>Another</th>
+                        <th>"Head cell"</th>
+                        <th>"Another"</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Cell text</td>
-                        <td>Another cell</td>
+                        <td>"Cell text"</td>
+                        <td>"Another cell"</td>
                     </tr>
                     <tr>
-                        <td>More cells</td>
-                        <td><em>below...</em></td>
+                        <td>"More cells"</td>
+                        <td><em>"below..."</em></td>
                     </tr>
                     <tr>
-                        <td><pre><code>Inlines</code></pre></td>
-                        <td><strong>allowed</strong></td>
+                        <td><pre><code>"Inlines"</code></pre></td>
+                        <td><strong>"allowed"</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    "#);
+    };
 
     println!("Result: {:#?}", el1);
 
-    assert_eq!(eq_els(&el1, &el2), EqResult::Equal);
+    assert_eq!(
+        format!("{:?}", el1),
+        format!("{:?}", el2),
+    );
 }
 
 #[test]
@@ -121,26 +133,29 @@ I'm saying something
 | Cell 1 | Cell 2 |
 "##);
 
-    let el2 = html! (r#"
+    let el2 = html! {
         <div>
-            <h1>Something</h1>
-            <p>I'm saying something</p>
+            <h1>"Something"</h1>
+            <p>"I'm saying something"</p>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Head 1</th>
-                        <th>Head 2</th>
+                        <th>"Head 1"</th>
+                        <th>"Head 2"</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Cell 1</td>
-                        <td>Cell 2</td>
+                        <td>"Cell 1"</td>
+                        <td>"Cell 2"</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    "#);
+    };
 
-    assert_eq!(eq_els(&el1, &el2), EqResult::Equal);
+    assert_eq!(
+        format!("{:?}", el1),
+        format!("{:?}", el2),
+    );
 }

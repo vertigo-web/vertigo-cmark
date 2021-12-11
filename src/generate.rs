@@ -134,7 +134,7 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<VDomNode>)
                 6 => "h6",
                 _ => "h6",
             };
-            generate_el(&el, children)
+            generate_el(el, children)
         }
 
         Tag::Table(_) => {
