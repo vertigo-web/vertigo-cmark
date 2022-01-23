@@ -1,5 +1,8 @@
 use pulldown_cmark::{Event, Tag, CodeBlockKind, LinkType};
-use vertigo::{VDomElement, VDomText, VDomNode, node_attr::attr};
+use vertigo::{
+    VDomElement,
+    dev::{VDomText, VDomNode, node_attr::attr}
+};
 use std::collections::VecDeque;
 
 use super::table_state::TableState;
