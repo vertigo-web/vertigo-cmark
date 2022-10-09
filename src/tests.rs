@@ -1,21 +1,27 @@
-use super::to_vertigo;
+use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
 
-use vertigo::html;
+use super::to_vertigo;
 
 #[test]
 fn text() {
-    let el1 = to_vertigo("foo bar");
-    let el2 = html! { <div><p>"foo bar"</p></div> };
+    log_start();
+    let _el1 = to_vertigo("foo bar");
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    log_start();
+    let _el2 = dom! { <div><p>"foo bar"</p></div> };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(
-        format!("{:?}", el1),
-        format!("{:?}", el2),
+        format!("{}", el1_str),
+        format!("{}", el2_str),
     );
 }
 
 #[test]
 fn heading() {
-    let el1 = to_vertigo(r#"
+    log_start();
+    let _el1 = to_vertigo(r#"
 # Heading 1
 
 foo
@@ -27,9 +33,11 @@ bar
 ```
 example
 ```
-    "#);
+"#);
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    let el2 = html! {
+    log_start();
+    let _el2 = dom! {
         <div>
             <h1>"Heading 1"</h1>
             <p>"foo"</p>
@@ -38,21 +46,25 @@ example
             <pre><code>"example"</code></pre>
         </div>
     };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(
-        format!("{:?}", el1),
-        format!("{:?}", el2),
+        format!("{}", el1_str),
+        format!("{}", el2_str),
     );
 }
 
 #[test]
 fn table_1() {
-    let el1 = to_vertigo(r##" foo|bar
+    log_start();
+    let _el1 = to_vertigo(r##" foo|bar
  ---|---
  baz|bim
-"##);
+ "##);
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    let el2 = html! {
+    log_start();
+    let _el2 = dom! {
         <div>
             <table border="1">
                 <thead>
@@ -70,24 +82,28 @@ fn table_1() {
             </table>
         </div>
     };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(
-        format!("{:?}", el1),
-        format!("{:?}", el2),
+        format!("{}", el1_str),
+        format!("{}", el2_str),
     );
 }
 
 #[test]
 fn table_2() {
-    let el1 = to_vertigo(r##"
+    log_start();
+    let _el1 = to_vertigo(r##"
 | Head cell  | Another      |
 | ---------- | ------------ |
 | Cell text  | Another cell |
 | More cells | *below...*   |
 | ```Inlines``` | __allowed__ |
 "##);
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    let el2 = html! {
+    log_start();
+    let _el2 = dom! {
         <div>
             <table border="1">
                 <thead>
@@ -113,18 +129,18 @@ fn table_2() {
             </table>
         </div>
     };
-
-    println!("Result: {:#?}", el1);
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(
-        format!("{:?}", el1),
-        format!("{:?}", el2),
+        format!("{}", el1_str),
+        format!("{}", el2_str),
     );
 }
 
 #[test]
 fn table_mixed() {
-    let el1 = to_vertigo(r##"# Something
+    log_start();
+    let _el1 = to_vertigo(r##"# Something
 
 I'm saying something
 
@@ -132,8 +148,10 @@ I'm saying something
 | ------ | ------ |
 | Cell 1 | Cell 2 |
 "##);
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    let el2 = html! {
+    log_start();
+    let _el2 = dom! {
         <div>
             <h1>"Something"</h1>
             <p>"I'm saying something"</p>
@@ -153,9 +171,10 @@ I'm saying something
             </table>
         </div>
     };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(
-        format!("{:?}", el1),
-        format!("{:?}", el2),
+        format!("{}", el1_str),
+        format!("{}", el2_str),
     );
 }

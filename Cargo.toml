@@ -7,7 +7,5 @@ license = "MIT OR Apache-2.0"
 description = "Allows to render CommonMark inside Vertigo tree"
 
 [dependencies]
-pulldown-cmark = "0.8.0"
-vertigo = "0.1.0-beta.3"
-# vertigo = { git = "https://github.com/vertigo-web/vertigo.git", branch="vertigo-testing" }
-# vertigo = { path = "../vertigo/crates/vertigo" }
+pulldown-cmark = "0.8"
+vertigo = "0.1"
