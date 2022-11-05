@@ -50,7 +50,8 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
                             // Additionally pop head element into new table_children
                             let mut table_children = soc.pop_front().unwrap_or_default();
                             // Create tbody element and add to table children
-                            table_children.push(DomElement::from_parts::<String>("tbody", vec![], children).into());
+                            let el = DomElement::new("tbody").children(children);
+                            table_children.push(el.into());
                             // Pop unused layer
                             soc.pop_front();
                             // Create table element with thead and tbody as children
@@ -69,7 +70,11 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
                 if trimmed_text.is_empty() {
                     None
                 } else {
-                    Some(DomText::new(text.trim().to_string()).into())
+                    Some(DomText::new(
+                        // keep spaces to not glue text with sibling blocks
+                        text.trim_matches(|c: char| c != ' ' && c.is_whitespace())
+                        .to_string()
+                    ).into())
                 }
             },
 
@@ -97,10 +102,10 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
                 Some(generate_el("hr", vec![])),
 
             Event::TaskListMarker(checked) => {
-                let mut dom_element = DomElement::new("input");
-                dom_element = dom_element.attr("type", "checkbox".into());
+                let dom_element = DomElement::new("input");
+                dom_element.add_attr("type", "checkbox");
                 if checked {
-                    dom_element = dom_element.attr("checked", "1".into());
+                    dom_element.add_attr("checked", "1");
                 }
                 Some(dom_element.into())
             }
@@ -123,7 +128,9 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
 fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) -> DomNode {
     match tag {
         Tag::Paragraph =>
-            DomElement::from_parts::<String>("p", vec![], children).into(),
+            DomElement::new("p")
+                .children(children)
+                .into(),
 
         Tag::Heading(level) => {
             let el = match level {
@@ -139,31 +146,35 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
         }
 
         Tag::Table(_) => {
-            DomElement::from_parts(
-                "table",
-                vec![("border", "1".into())], // temporary
-                children
-            ).into()
+            DomElement::new("table")
+                .attr("border", "1")
+                .children(children)
+                .into()
         }
 
         Tag::TableHead =>
-            DomElement::from_parts::<String>(
-                "thead",
-                vec![],
-                vec![DomElement::from_parts::<String>("tr", vec![], children).into()],
-            ).into(),
+            DomElement::new("thead")
+                .child(
+                    DomElement::new("tr")
+                        .children(children)
+                )
+                .into(),
 
         Tag::TableRow =>
-            DomElement::from_parts::<String>("tr", vec![], children).into(),
+            DomElement::new("tr")
+                .children(children)
+                .into(),
 
         Tag::TableCell => {
             let attrs = if let Some(alignment) = table_state.alignment() {
-                vec![("align", alignment.into())]
+                vec![("align", alignment)]
             } else {
                 vec![]
             };
-            let el = if table_state.head { "th" } else { "td" };
-            DomElement::from_parts(el, attrs, children).into()
+            DomElement::new(if table_state.head { "th" } else { "td" })
+                .attrs(attrs)
+                .children(children)
+                .into()
         }
 
         Tag::BlockQuote =>
@@ -176,11 +187,10 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
             generate_el("ol", children),
 
         Tag::List(Some(start)) => {
-            DomElement::from_parts(
-                "ol",
-                vec![("start", start.to_string().into())],
-                children
-            ).into()
+            DomElement::new("ol")
+                .attr("start", start.to_string())
+                .children(children)
+                .into()
         }
 
         Tag::List(None) =>
@@ -217,7 +227,9 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
 }
 
 fn generate_el(el: &'static str, children: Vec<DomNode>) -> DomNode {
-    DomElement::from_parts::<String>(el, vec![], children).into()
+    DomElement::new(el)
+        .children(children)
+        .into()
 }
 
 fn generate_codeblock(info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
@@ -228,16 +240,15 @@ fn generate_codeblock(info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
             match lang {
                 Some("") |
                 None => vec![],
-                Some(lang) => vec![("class", format!("language-{}", lang).into())],
+                Some(lang) => vec![("class", ["language-{}", lang].concat())],
             }
         },
     };
 
-    let code = DomElement::from_parts(
-        "code",
-        code_attrs,
-        children,
-    ).into();
+    let code = DomElement::new("code")
+        .attrs(code_attrs)
+        .children(children)
+        .into();
 
     generate_el("pre", vec![code])
 }
