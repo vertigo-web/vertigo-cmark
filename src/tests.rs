@@ -12,10 +12,7 @@ fn text() {
     let _el2 = dom! { <div><p>"foo bar"</p></div> };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    assert_eq!(
-        format!("{}", el1_str),
-        format!("{}", el2_str),
-    );
+    assert_eq!(el1_str, el2_str);
 }
 
 #[test]
@@ -48,10 +45,33 @@ example
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    assert_eq!(
-        format!("{}", el1_str),
-        format!("{}", el2_str),
-    );
+    assert_eq!(el1_str, el2_str);
+}
+
+#[test]
+fn text_bold_inline() {
+    log_start();
+    let _el1 = to_vertigo("foo __spam__ bar");
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    log_start();
+    let _el2 = dom! { <div><p>"foo <strong>spam</strong> bar"</p></div> };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    assert_eq!(el1_str, el2_str);
+}
+
+#[test]
+fn text_italics_inline() {
+    log_start();
+    let _el1 = to_vertigo("foo *spam* bar");
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    log_start();
+    let _el2 = dom! { <div><p>"foo <em>spam</em> bar"</p></div> };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    assert_eq!(el1_str, el2_str);
 }
 
 #[test]
@@ -84,10 +104,7 @@ fn table_1() {
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    assert_eq!(
-        format!("{}", el1_str),
-        format!("{}", el2_str),
-    );
+    assert_eq!(el1_str, el2_str);
 }
 
 #[test]
@@ -131,10 +148,7 @@ fn table_2() {
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    assert_eq!(
-        format!("{}", el1_str),
-        format!("{}", el2_str),
-    );
+    assert_eq!(el1_str, el2_str);
 }
 
 #[test]
@@ -173,8 +187,5 @@ I'm saying something
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
-    assert_eq!(
-        format!("{}", el1_str),
-        format!("{}", el2_str),
-    );
+    assert_eq!(el1_str, el2_str);
 }

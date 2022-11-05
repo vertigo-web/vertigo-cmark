@@ -1,5 +1,5 @@
 use pulldown_cmark::{Parser, Options};
-use vertigo::DomElement;
+use vertigo::{DomElement, DomNode};
 
 mod generate;
 mod table_state;
@@ -8,7 +8,7 @@ mod table_state;
 mod tests;
 
 /// Converts a CommonMark string to Vertigo tree
-pub fn to_vertigo(text: &str) -> DomElement {
+pub fn to_vertigo(text: &str) -> DomNode {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_TABLES);
     // opts.insert(Options::ENABLE_FOOTNOTES);
@@ -26,5 +26,5 @@ pub fn to_vertigo(text: &str) -> DomElement {
         elem.add_child(child);
     }
 
-    elem
+    elem.into()
 }
