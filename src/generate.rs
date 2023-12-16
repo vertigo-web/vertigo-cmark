@@ -1,4 +1,4 @@
-use pulldown_cmark::{Event, Tag, CodeBlockKind, LinkType};
+use pulldown_cmark::{Event, Tag, CodeBlockKind, LinkType, HeadingLevel};
 use vertigo::{
     DomElement, DomNode, DomText,
 };
@@ -132,15 +132,14 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
                 .children(children)
                 .into(),
 
-        Tag::Heading(level) => {
+        Tag::Heading(level, _fragment, _classes) => {
             let el = match level {
-                1 => "h1",
-                2 => "h2",
-                3 => "h3",
-                4 => "h4",
-                5 => "h5",
-                6 => "h6",
-                _ => "h6",
+                HeadingLevel::H1 => "h1",
+                HeadingLevel::H2 => "h2",
+                HeadingLevel::H3 => "h3",
+                HeadingLevel::H4 => "h4",
+                HeadingLevel::H5 => "h5",
+                HeadingLevel::H6 => "h6",
             };
             generate_el(el, children)
         }

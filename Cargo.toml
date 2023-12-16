@@ -1,11 +1,11 @@
 [package]
 name = "vertigo-cmark"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 authors = ["Michal Pokrywka <wolfmoon@o2.pl>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Allows to render CommonMark inside Vertigo tree"
 
 [dependencies]
-pulldown-cmark = "0.8"
-vertigo = "0.3"
+pulldown-cmark = "0.9"
+vertigo = "0.4"
