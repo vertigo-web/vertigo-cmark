@@ -80,7 +80,7 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
 
             Event::Code(text) => {
                 let children = vec![DomText::new(text.to_string()).into()];
-                Some(generate_codeblock(CodeBlockKind::Indented, children))
+                Some(generate_codeblock("code", CodeBlockKind::Indented, children))
             }
 
             Event::Html(html) =>
@@ -180,7 +180,7 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
             generate_el("blockquote", children),
 
         Tag::CodeBlock(info) =>
-            generate_codeblock(info, children),
+            generate_codeblock("pre", info, children),
 
         Tag::List(Some(1)) =>
             generate_el("ol", children),
@@ -231,7 +231,7 @@ fn generate_el(el: &'static str, children: Vec<DomNode>) -> DomNode {
         .into()
 }
 
-fn generate_codeblock(info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
+fn generate_codeblock(use_tag: &'static str, info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
     let code_attrs = match info {
         CodeBlockKind::Indented => vec![],
         CodeBlockKind::Fenced(info) => {
@@ -239,15 +239,13 @@ fn generate_codeblock(info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
             match lang {
                 Some("") |
                 None => vec![],
-                Some(lang) => vec![("class", ["language-{}", lang].concat())],
+                Some(lang) => vec![("class", ["language-", lang].concat())],
             }
         },
     };
 
-    let code = DomElement::new("code")
+    DomElement::new(use_tag)
         .attrs(code_attrs)
         .children(children)
-        .into();
-
-    generate_el("pre", vec![code])
+        .into()
 }

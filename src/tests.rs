@@ -40,7 +40,7 @@ example
             <p>"foo"</p>
             <hr />
             <p>"bar"</p>
-            <pre><code>"example"</code></pre>
+            <pre>"example"</pre>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
@@ -139,7 +139,7 @@ fn table_2() {
                         <td><em>"below..."</em></td>
                     </tr>
                     <tr>
-                        <td><pre><code>"Inlines"</code></pre></td>
+                        <td><code>"Inlines"</code></td>
                         <td><strong>"allowed"</strong></td>
                     </tr>
                 </tbody>
