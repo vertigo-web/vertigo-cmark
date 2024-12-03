@@ -11,13 +11,14 @@ pub(crate) struct TableState {
 
 impl TableState {
     pub fn alignment(&self) -> Option<String> {
-        self.soa.front()
+        self.soa
+            .front()
             .and_then(|als| als.get(self.cell_index))
             .and_then(|al| match al {
                 Alignment::Left => Some("left".to_string()),
                 Alignment::Center => Some("center".to_string()),
                 Alignment::Right => Some("right".to_string()),
-                _ => None
+                _ => None,
             })
     }
 }

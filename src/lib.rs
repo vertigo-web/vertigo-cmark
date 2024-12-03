@@ -1,4 +1,4 @@
-use pulldown_cmark::{Parser, Options};
+use pulldown_cmark::{Options, Parser};
 use vertigo::{DomElement, DomNode};
 
 mod generate;
@@ -16,7 +16,11 @@ pub fn to_vertigo(text: &str) -> DomNode {
     // opts.insert(Options::ENABLE_TASKLISTS);
     // opts.insert(Options::ENABLE_SMART_PUNCTUATION);
 
-    let parser = Parser::new_ext(text, opts);
+    // Newlines will be removed by parser so add spaces
+    // to not have things glued accidentally
+    let text = text.replace('\n', " \n");
+
+    let parser = Parser::new_ext(&text, opts);
 
     let children = generate::generate_tree(parser);
 
