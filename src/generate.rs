@@ -1,16 +1,17 @@
-use pulldown_cmark::{Event, Tag, CodeBlockKind, LinkType, HeadingLevel};
-use vertigo::{
-    DomElement, DomNode, DomText,
-};
+use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, LinkType, Tag};
 use std::collections::VecDeque;
+use vertigo::{DomElement, DomNode, DomText};
 
 use super::table_state::TableState;
 
 /// Converts an event iterator into Vertigo tree
-pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> {
+pub fn generate_tree<'a>(events: impl Iterator<Item = Event<'a>>) -> Vec<DomNode> {
     // Stack of children lists with current list on top
     let mut soc = VecDeque::new();
     let mut table_state = TableState::default();
+
+    // Box for keeping chunks of texts glued for single DomText
+    let mut last_glued_text = String::new();
 
     // Drop most outer list on the bottom
     soc.push_front(vec![]);
@@ -22,14 +23,14 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
                 match tag {
                     Tag::Table(als) => {
                         table_state.soa.push_front(als);
-                    },
+                    }
                     Tag::TableHead => {
                         if table_state.head {
                             vertigo::log::error!("Already in table head, ")
                         }
                         table_state.head = true
                     }
-                    _ => ()
+                    _ => (),
                 }
                 None
             }
@@ -57,49 +58,58 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
                             // Create table element with thead and tbody as children
                             Some(generate_tag(tag, &mut table_state, table_children))
                         }
-                        _ => Some(generate_tag(tag, &mut table_state, children))
+                        _ => Some(generate_tag(tag, &mut table_state, children)),
                     }
                 } else {
                     vertigo::log::error!("Dangling end tag {:?} in cmark parser", tag);
                     None
                 }
-            },
+            }
 
             Event::Text(text) => {
-                let trimmed_text = text.trim().to_string();
-                if trimmed_text.is_empty() {
+                if text.trim().is_empty() {
                     None
                 } else {
-                    Some(DomText::new(
-                        // keep spaces to not glue text with sibling blocks
-                        text.trim_matches(|c: char| c != ' ' && c.is_whitespace())
-                        .to_string()
-                    ).into())
+                    // This will be eventually used for generating glued text node.
+                    last_glued_text.push_str(&text);
+                    // This will be eventually used for generating not glued text node.
+                    Some(
+                        DomText::new(text.trim_matches(|c: char| c != ' ' && c.is_whitespace()))
+                            .into(),
+                    )
                 }
-            },
+            }
 
             Event::Code(text) => {
                 let children = vec![DomText::new(text.to_string()).into()];
-                Some(generate_codeblock("code", CodeBlockKind::Indented, children))
+                Some(generate_codeblock(
+                    "code",
+                    CodeBlockKind::Indented,
+                    children,
+                ))
             }
 
             Event::Html(html) =>
-                // TODO:
-                Some(DomText::new(html.to_string()).into()),
+            // TODO:
+            {
+                Some(DomText::new(html.to_string()).into())
+            }
 
             Event::FootnoteReference(text) =>
-                // TODO:
-                Some(DomText::new(text.to_string()).into()),
+            // TODO:
+            {
+                Some(DomText::new(text.to_string()).into())
+            }
 
             Event::SoftBreak =>
-                // TODO: ?
-                None,
+            // TODO: ?
+            {
+                None
+            }
 
-            Event::HardBreak =>
-                Some(generate_el("br", vec![])),
+            Event::HardBreak => Some(generate_el("br", vec![])),
 
-            Event::Rule =>
-                Some(generate_el("hr", vec![])),
+            Event::Rule => Some(generate_el("hr", vec![])),
 
             Event::TaskListMarker(checked) => {
                 let dom_element = DomElement::new("input");
@@ -114,7 +124,23 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
         // Push new child into top list on the stack
         if let Some(child) = new_child {
             if let Some(children) = soc.front_mut() {
-                children.push(child)
+                if let DomNode::Text { .. } = child {
+                    if let Some(DomNode::Text {
+                        node: ref mut last_text,
+                    }) = children.last_mut()
+                    {
+                        // If both current and last child is text then don't push new child
+                        // just replaced last child with the glued one
+                        *last_text = DomText::new(
+                            last_glued_text.trim_matches(|c: char| c != ' ' && c.is_whitespace()),
+                        );
+                    } else {
+                        children.push(child)
+                    }
+                } else {
+                    children.push(child);
+                    last_glued_text = String::new();
+                }
             }
         }
     }
@@ -127,10 +153,7 @@ pub fn generate_tree<'a>(events: impl Iterator<Item=Event<'a>>) -> Vec<DomNode> 
 
 fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) -> DomNode {
     match tag {
-        Tag::Paragraph =>
-            DomElement::new("p")
-                .children(children)
-                .into(),
+        Tag::Paragraph => DomElement::new("p").children(children).into(),
 
         Tag::Heading(level, _fragment, _classes) => {
             let el = match level {
@@ -144,25 +167,16 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
             generate_el(el, children)
         }
 
-        Tag::Table(_) => {
-            DomElement::new("table")
-                .attr("border", "1")
-                .children(children)
-                .into()
-        }
+        Tag::Table(_) => DomElement::new("table")
+            .attr("border", "1")
+            .children(children)
+            .into(),
 
-        Tag::TableHead =>
-            DomElement::new("thead")
-                .child(
-                    DomElement::new("tr")
-                        .children(children)
-                )
-                .into(),
+        Tag::TableHead => DomElement::new("thead")
+            .child(DomElement::new("tr").children(children))
+            .into(),
 
-        Tag::TableRow =>
-            DomElement::new("tr")
-                .children(children)
-                .into(),
+        Tag::TableRow => DomElement::new("tr").children(children).into(),
 
         Tag::TableCell => {
             let attrs = if let Some(alignment) = table_state.alignment() {
@@ -176,72 +190,71 @@ fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) 
                 .into()
         }
 
-        Tag::BlockQuote =>
-            generate_el("blockquote", children),
+        Tag::BlockQuote => generate_el("blockquote", children),
 
-        Tag::CodeBlock(info) =>
-            generate_codeblock("pre", info, children),
+        Tag::CodeBlock(info) => generate_codeblock("pre", info, children),
 
-        Tag::List(Some(1)) =>
-            generate_el("ol", children),
+        Tag::List(Some(1)) => generate_el("ol", children),
 
-        Tag::List(Some(start)) => {
-            DomElement::new("ol")
-                .attr("start", start.to_string())
-                .children(children)
-                .into()
-        }
+        Tag::List(Some(start)) => DomElement::new("ol")
+            .attr("start", start.to_string())
+            .children(children)
+            .into(),
 
-        Tag::List(None) =>
-            generate_el("ul", children),
+        Tag::List(None) => generate_el("ul", children),
 
-        Tag::Item =>
-            generate_el("li", children),
+        Tag::Item => generate_el("li", children),
 
-        Tag::Emphasis =>
-            generate_el("em", children),
+        Tag::Emphasis => generate_el("em", children),
 
-        Tag::Strong =>
-            generate_el("strong", children),
+        Tag::Strong => generate_el("strong", children),
 
-        Tag::Strikethrough =>
-            generate_el("del", children),
+        Tag::Strikethrough => generate_el("del", children),
 
         Tag::Link(LinkType::Email, _dest, _title) =>
-            // TODO:
-            DomText::new("".to_string()).into(),
+        // TODO:
+        {
+            DomText::new("".to_string()).into()
+        }
 
         Tag::Link(_link_type, _dest, _title) =>
-            // TODO:
-            DomText::new("".to_string()).into(),
+        // TODO:
+        {
+            DomText::new("".to_string()).into()
+        }
 
         Tag::Image(_link_type, _dest, _title) =>
-            // TODO:
-            DomText::new("".to_string()).into(),
+        // TODO:
+        {
+            DomText::new("".to_string()).into()
+        }
 
         Tag::FootnoteDefinition(_name) =>
-            // TODO:
-            DomText::new("".to_string()).into(),
+        // TODO:
+        {
+            DomText::new("".to_string()).into()
+        }
     }
 }
 
 fn generate_el(el: &'static str, children: Vec<DomNode>) -> DomNode {
-    DomElement::new(el)
-        .children(children)
-        .into()
+    DomElement::new(el).children(children).into()
 }
 
-fn generate_codeblock(use_tag: &'static str, info: CodeBlockKind, children: Vec<DomNode>) -> DomNode {
+fn generate_codeblock(
+    use_tag: &'static str,
+    info: CodeBlockKind,
+    children: Vec<DomNode>,
+) -> DomNode {
     let code_attrs = match info {
         CodeBlockKind::Indented => vec![],
         CodeBlockKind::Fenced(info) => {
             let lang = info.split(' ').next();
             match lang {
-                Some("") |
-                None => vec![],
+                Some("") | None => vec![],
                 Some(lang) => vec![("class", ["language-", lang].concat())],
             }
-        },
+        }
     };
 
     DomElement::new(use_tag)
