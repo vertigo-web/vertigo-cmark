@@ -1,264 +1,423 @@
-use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, LinkType, Tag};
-use std::collections::VecDeque;
-use vertigo::{DomElement, DomNode, DomText};
+// Based on https://github.com/pulldown-cmark/pulldown-cmark/blob/master/pulldown-cmark/src/html.rs
 
-use super::table_state::TableState;
+use pulldown_cmark::{
+    Alignment, BlockQuoteKind, CodeBlockKind, CowStr, Event, Event::*, HeadingLevel, LinkType, Tag,
+    TagEnd,
+};
+use std::collections::{HashMap, VecDeque};
+use vertigo::{log, DomElement, DomNode, DomText};
 
-/// Converts an event iterator into Vertigo tree
-pub fn generate_tree<'a>(events: impl Iterator<Item = Event<'a>>) -> Vec<DomNode> {
-    // Stack of children lists with current list on top
-    let mut soc = VecDeque::new();
-    let mut table_state = TableState::default();
+enum TableState {
+    Head,
+    Body,
+}
 
-    // Box for keeping chunks of texts glued for single DomText
-    let mut last_glued_text = String::new();
+struct VertigoWriter<'a, I> {
+    /// Iterator supplying events.
+    iter: I,
 
-    // Drop most outer list on the bottom
-    soc.push_front(vec![]);
+    /// Whether if inside a metadata block (text should not be written)
+    in_non_writing_block: bool,
 
-    for event in events {
-        let new_child = match event {
-            Event::Start(tag) => {
-                soc.push_front(vec![]);
-                match tag {
-                    Tag::Table(als) => {
-                        table_state.soa.push_front(als);
+    table_state: TableState,
+    table_alignments: Vec<Alignment>,
+    table_cell_index: usize,
+    numbers: HashMap<CowStr<'a>, usize>,
+
+    // Stack of nested nodes
+    soc: VecDeque<DomNode>,
+}
+
+impl<'a, I> VertigoWriter<'a, I>
+where
+    I: Iterator<Item = Event<'a>>,
+{
+    fn new(iter: I) -> Self {
+        Self {
+            iter,
+            in_non_writing_block: false,
+            table_state: TableState::Head,
+            table_alignments: vec![],
+            table_cell_index: 0,
+            numbers: HashMap::new(),
+            soc: VecDeque::new(),
+        }
+    }
+
+    fn run(mut self) -> DomNode {
+        self.push_elname("div");
+        while let Some(event) = self.iter.next() {
+            println!("Event: {:?}", event);
+            match event {
+                Start(tag) => {
+                    self.start_tag(tag);
+                }
+                End(tag) => {
+                    self.end_tag(tag);
+                }
+                Text(text) => {
+                    if !self.in_non_writing_block {
+                        self.add_child(DomText::new(text));
                     }
-                    Tag::TableHead => {
-                        if table_state.head {
-                            vertigo::log::error!("Already in table head, ")
-                        }
-                        table_state.head = true
-                    }
+                }
+                Code(text) => {
+                    let element = DomElement::new("code").child(DomText::new(text));
+                    self.add_child(element);
+                }
+                InlineMath(text) => {
+                    let element = DomElement::new("span")
+                        .attr("class", "math math-inline")
+                        .child(DomText::new(text));
+                    self.add_child(element);
+                }
+                DisplayMath(text) => {
+                    let element = DomElement::new("span")
+                        .attr("class", "math math-display")
+                        .child(DomText::new(text));
+                    self.add_child(element);
+                }
+                Html(_html) | InlineHtml(_html) => {
+                    // TODO:
+                }
+                SoftBreak => {
+                    // Add space to not glue sibling texts in render
+                    self.add_child(DomText::new(" "));
+                }
+                HardBreak => {
+                    self.add_child_name("br");
+                }
+                Rule => {
+                    self.add_child_name("hr");
+                }
+                FootnoteReference(name) => {
+                    let len = self.numbers.len() + 1;
+                    let link = DomElement::new("a").attr("href", ["#", name.as_ref()].concat());
+                    let number = *self.numbers.entry(name).or_insert(len);
+                    link.add_child_text(number.to_string());
+                    self.add_child(
+                        DomElement::new("sup")
+                            .attr("class", "footnote-reference")
+                            .child(link),
+                    );
+                }
+                TaskListMarker(true) => {
+                    self.add_child(
+                        DomElement::new("input")
+                            .attr("disabled", "")
+                            .attr("type", "checkbox")
+                            .attr("checked", "checked"),
+                    );
+                }
+                TaskListMarker(false) => {
+                    self.add_child(
+                        DomElement::new("input")
+                            .attr("disabled", "")
+                            .attr("type", "checkbox"),
+                    );
+                }
+            }
+        }
+        self.pop_node().unwrap_or_else(|| {
+            log::error!("Popping nesting did not produce root node!");
+            DomElement::new("div").into()
+        })
+    }
+
+    /// Pushes dom element on stack
+    fn start_tag(&mut self, tag: Tag<'a>) {
+        match &tag {
+            Tag::HtmlBlock => {}
+            Tag::Paragraph => {
+                self.push_elname("p");
+            }
+            Tag::Heading {
+                level,
+                id,
+                classes,
+                attrs: _, // Vertigo doesn't support dynamic attributes keys
+            } => {
+                let el_name = match level {
+                    HeadingLevel::H1 => "h1",
+                    HeadingLevel::H2 => "h2",
+                    HeadingLevel::H3 => "h3",
+                    HeadingLevel::H4 => "h4",
+                    HeadingLevel::H5 => "h5",
+                    HeadingLevel::H6 => "h6",
+                };
+                let element = DomElement::new(el_name);
+                if let Some(id) = id {
+                    element.add_attr("id", id);
+                }
+                if !classes.is_empty() {
+                    let value = classes.join(" ");
+                    element.add_attr("class", value);
+                }
+                self.push_node(element);
+            }
+            Tag::Table(alignments) => {
+                self.table_alignments = alignments.clone();
+                self.push_node(DomElement::new("table").attr("border", "1"))
+            }
+            Tag::TableHead => {
+                self.table_state = TableState::Head;
+                self.table_cell_index = 0;
+                self.push_elname("thead");
+                self.push_elname("tr");
+            }
+            Tag::TableRow => {
+                self.table_cell_index = 0;
+                self.push_elname("tr");
+            }
+            Tag::TableCell => {
+                let el_name = match self.table_state {
+                    TableState::Head => "th",
+                    TableState::Body => "td",
+                };
+                let element = DomElement::new(el_name);
+                match self.table_alignments.get(self.table_cell_index) {
+                    Some(&Alignment::Left) => element.add_attr("style", "text-align: left"),
+                    Some(&Alignment::Center) => element.add_attr("style", "text-align: center"),
+                    Some(&Alignment::Right) => element.add_attr("style", "text-align: right"),
                     _ => (),
                 }
-                None
+                self.push_node(element);
             }
-
-            Event::End(tag) => {
-                if let Some(children) = soc.pop_front() {
-                    match tag {
-                        Tag::TableHead => {
-                            table_state.head = false;
-                            // Put head on stack
-                            soc.push_front(vec![generate_tag(tag, &mut table_state, children)]);
-                            // Put new layer for regular rows
-                            soc.push_front(vec![]);
-                            None
+            Tag::CodeBlock(info) => {
+                self.push_elname("pre");
+                let element = DomElement::new("code");
+                match info {
+                    CodeBlockKind::Fenced(info) => {
+                        let lang = info.split(' ').next().unwrap_or_default();
+                        if !lang.is_empty() {
+                            element.add_attr("class", format!("language-{lang}"));
                         }
-                        Tag::Table(_) => {
-                            // Regular rows from stack was popped first into children
-                            // Additionally pop head element into new table_children
-                            let mut table_children = soc.pop_front().unwrap_or_default();
-                            // Create tbody element and add to table children
-                            let el = DomElement::new("tbody").children(children);
-                            table_children.push(el.into());
-                            // Pop unused layer
-                            soc.pop_front();
-                            // Create table element with thead and tbody as children
-                            Some(generate_tag(tag, &mut table_state, table_children))
-                        }
-                        _ => Some(generate_tag(tag, &mut table_state, children)),
                     }
-                } else {
-                    vertigo::log::error!("Dangling end tag {:?} in cmark parser", tag);
-                    None
+                    CodeBlockKind::Indented => {}
+                };
+                self.push_node(element);
+            }
+            Tag::BlockQuote(kind) => {
+                let element = DomElement::new("blockquote");
+
+                if let Some(kind) = kind {
+                    let kind_value = match kind {
+                        BlockQuoteKind::Note => "markdown-alert-note",
+                        BlockQuoteKind::Tip => "markdown-alert-tip",
+                        BlockQuoteKind::Important => "markdown-alert-important",
+                        BlockQuoteKind::Warning => "markdown-alert-warning",
+                        BlockQuoteKind::Caution => "markdown-alert-caution",
+                    };
+                    element.add_attr("class", kind_value);
+                };
+                self.push_node(element);
+            }
+            Tag::List(Some(1)) => self.push_elname("ol"),
+            Tag::List(Some(start)) => {
+                self.push_node(DomElement::new("ol").attr("start", start));
+            }
+            Tag::List(None) => self.push_elname("ul"),
+            Tag::Item => self.push_elname("li"),
+            Tag::DefinitionList => self.push_elname("dl"),
+            Tag::DefinitionListTitle => self.push_elname("dt"),
+            Tag::DefinitionListDefinition => self.push_elname("dd"),
+            Tag::Subscript => self.push_elname("sub"),
+            Tag::Superscript => self.push_elname("sup"),
+            Tag::Emphasis => self.push_elname("em"),
+            Tag::Strong => self.push_elname("strong"),
+            Tag::Strikethrough => self.push_elname("del"),
+            Tag::Link {
+                link_type,
+                dest_url,
+                title,
+                id: _,
+            } => {
+                let prefix = match link_type {
+                    LinkType::Email => "mailto:",
+                    _ => "",
+                };
+                let element = DomElement::new("a").attr("href", [prefix, dest_url].concat());
+                if !title.is_empty() {
+                    element.add_attr("title", title);
                 }
+                self.push_node(element);
             }
-
-            Event::Text(text) => {
-                if text.trim().is_empty() {
-                    None
-                } else {
-                    // This will be eventually used for generating glued text node.
-                    last_glued_text.push_str(&text);
-                    // This will be eventually used for generating not glued text node.
-                    Some(
-                        DomText::new(text.trim_matches(|c: char| c != ' ' && c.is_whitespace()))
-                            .into(),
-                    )
+            Tag::Image {
+                link_type: _,
+                dest_url,
+                title,
+                id: _,
+            } => {
+                let element = DomElement::new("img")
+                    .attr("src", dest_url)
+                    .attr("alt", self.raw_text());
+                if !title.is_empty() {
+                    element.add_attr("title", title);
                 }
+                self.add_child(element);
             }
-
-            Event::Code(text) => {
-                let children = vec![DomText::new(text.to_string()).into()];
-                Some(generate_codeblock(
-                    "code",
-                    CodeBlockKind::Indented,
-                    children,
-                ))
+            Tag::FootnoteDefinition(name) => {
+                let len = self.numbers.len() + 1;
+                let number = *self.numbers.entry(name.clone()).or_insert(len);
+                self.push_node(
+                    DomElement::new("div")
+                        .attr("class", "footnote-definition")
+                        .attr("id", name)
+                        .child(
+                            DomElement::new("sup")
+                                .attr("class", "footnote-definition-label")
+                                .child(DomText::new(number.to_string())),
+                        ),
+                );
             }
-
-            Event::Html(html) =>
-            // TODO:
-            {
-                Some(DomText::new(html.to_string()).into())
-            }
-
-            Event::FootnoteReference(text) =>
-            // TODO:
-            {
-                Some(DomText::new(text.to_string()).into())
-            }
-
-            Event::SoftBreak =>
-            // TODO: ?
-            {
-                None
-            }
-
-            Event::HardBreak => Some(generate_el("br", vec![])),
-
-            Event::Rule => Some(generate_el("hr", vec![])),
-
-            Event::TaskListMarker(checked) => {
-                let dom_element = DomElement::new("input");
-                dom_element.add_attr("type", "checkbox");
-                if checked {
-                    dom_element.add_attr("checked", "1");
-                }
-                Some(dom_element.into())
-            }
-        };
-
-        // Push new child into top list on the stack
-        if let Some(child) = new_child {
-            if let Some(children) = soc.front_mut() {
-                if let DomNode::Text { .. } = child {
-                    if let Some(DomNode::Text {
-                        node: ref mut last_text,
-                    }) = children.last_mut()
-                    {
-                        // If both current and last child is text then don't push new child
-                        // just replaced last child with the glued one
-                        *last_text = DomText::new(
-                            last_glued_text.trim_matches(|c: char| c != ' ' && c.is_whitespace()),
-                        );
-                    } else {
-                        children.push(child)
-                    }
-                } else {
-                    children.push(child);
-                    last_glued_text = String::new();
-                }
+            Tag::MetadataBlock(_) => {
+                self.in_non_writing_block = true;
             }
         }
     }
 
-    soc.pop_front().unwrap_or_else(|| {
-        vertigo::log::error!("Empty stack at generate tree");
-        vec![]
-    })
-}
-
-fn generate_tag(tag: Tag, table_state: &mut TableState, children: Vec<DomNode>) -> DomNode {
-    match tag {
-        Tag::Paragraph => DomElement::new("p").children(children).into(),
-
-        Tag::Heading(level, _fragment, _classes) => {
-            let el = match level {
-                HeadingLevel::H1 => "h1",
-                HeadingLevel::H2 => "h2",
-                HeadingLevel::H3 => "h3",
-                HeadingLevel::H4 => "h4",
-                HeadingLevel::H5 => "h5",
-                HeadingLevel::H6 => "h6",
-            };
-            generate_el(el, children)
+    fn end_tag(&mut self, tag: TagEnd) {
+        match tag {
+            TagEnd::HtmlBlock => {}
+            TagEnd::Table => {
+                // </tbody></table>
+                self.pop_node();
+                self.pop_node();
+            }
+            TagEnd::TableHead => {
+                // </tr></thead><tbody>
+                self.pop_node();
+                self.pop_node();
+                self.push_elname("tbody");
+                self.table_state = TableState::Body;
+            }
+            TagEnd::TableCell => {
+                self.pop_node();
+                self.table_cell_index += 1;
+            }
+            TagEnd::CodeBlock => {
+                // </code></pre>
+                self.pop_node();
+                self.pop_node();
+            }
+            TagEnd::TableRow
+            | TagEnd::Paragraph
+            | TagEnd::Heading(_)
+            | TagEnd::BlockQuote(_)
+            | TagEnd::List(_)
+            | TagEnd::Item
+            | TagEnd::DefinitionList
+            | TagEnd::DefinitionListTitle
+            | TagEnd::DefinitionListDefinition
+            | TagEnd::Subscript
+            | TagEnd::Superscript
+            | TagEnd::Emphasis
+            | TagEnd::Strong
+            | TagEnd::Strikethrough
+            | TagEnd::Link
+            | TagEnd::FootnoteDefinition => {
+                self.pop_node();
+            }
+            TagEnd::Image => {} // shouldn't happen, handled in start
+            TagEnd::MetadataBlock(_) => {
+                self.in_non_writing_block = false;
+            }
         }
+    }
 
-        Tag::Table(_) => DomElement::new("table")
-            .attr("border", "1")
-            .children(children)
-            .into(),
-
-        Tag::TableHead => DomElement::new("thead")
-            .child(DomElement::new("tr").children(children))
-            .into(),
-
-        Tag::TableRow => DomElement::new("tr").children(children).into(),
-
-        Tag::TableCell => {
-            let attrs = if let Some(alignment) = table_state.alignment() {
-                vec![("align", alignment)]
-            } else {
-                vec![]
-            };
-            DomElement::new(if table_state.head { "th" } else { "td" })
-                .attrs(attrs)
-                .children(children)
-                .into()
+    // run raw text, consuming end tag
+    fn raw_text(&mut self) -> String {
+        let mut nest = 0;
+        let mut writer = String::new();
+        for event in self.iter.by_ref() {
+            match event {
+                Start(_) => nest += 1,
+                End(_) => {
+                    if nest == 0 {
+                        break;
+                    }
+                    nest -= 1;
+                }
+                Html(_) => {}
+                InlineHtml(text) | Code(text) | Text(text) => {
+                    writer.push_str(&text);
+                }
+                InlineMath(text) => {
+                    writer.push('$');
+                    writer.push_str(&text);
+                    writer.push('$');
+                }
+                DisplayMath(text) => {
+                    writer.push_str("$$");
+                    writer.push_str(&text);
+                    writer.push_str("$$");
+                }
+                SoftBreak | HardBreak | Rule => {
+                    writer.push(' ');
+                }
+                FootnoteReference(name) => {
+                    let len = self.numbers.len() + 1;
+                    let number = *self.numbers.entry(name).or_insert(len);
+                    writer.push_str(&format!("[{}]", number));
+                }
+                TaskListMarker(true) => {
+                    writer.push_str("[x]");
+                }
+                TaskListMarker(false) => {
+                    writer.push_str("[ ]");
+                }
+            }
         }
+        writer
+    }
 
-        Tag::BlockQuote => generate_el("blockquote", children),
+    fn push_node(&mut self, node: impl Into<DomNode>) {
+        self.soc.push_front(node.into());
+    }
 
-        Tag::CodeBlock(info) => generate_codeblock("pre", info, children),
+    fn push_elname(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.push_node(DomElement::new(name));
+    }
 
-        Tag::List(Some(1)) => generate_el("ol", children),
-
-        Tag::List(Some(start)) => DomElement::new("ol")
-            .attr("start", start.to_string())
-            .children(children)
-            .into(),
-
-        Tag::List(None) => generate_el("ul", children),
-
-        Tag::Item => generate_el("li", children),
-
-        Tag::Emphasis => generate_el("em", children),
-
-        Tag::Strong => generate_el("strong", children),
-
-        Tag::Strikethrough => generate_el("del", children),
-
-        Tag::Link(LinkType::Email, _dest, _title) =>
-        // TODO:
-        {
-            DomText::new("".to_string()).into()
+    fn pop_node(&mut self) -> Option<DomNode> {
+        if let Some(child) = self.soc.pop_front() {
+            match self.soc.front_mut() {
+                Some(parent) => {
+                    match parent {
+                        DomNode::Node { node } => node.add_child(child),
+                        _ => {
+                            unreachable!("Can't push children to non-element node");
+                        }
+                    }
+                    return None;
+                }
+                None => return Some(child),
+            }
         }
+        None
+    }
 
-        Tag::Link(_link_type, _dest, _title) =>
-        // TODO:
-        {
-            DomText::new("".to_string()).into()
+    fn add_child(&mut self, child: impl Into<DomNode>) {
+        if let Some(parent) = self.soc.front_mut() {
+            match parent {
+                DomNode::Node { node } => node.add_child(child),
+                _ => log::error!("Can't push child to non-element node (2)"),
+            }
+        } else {
+            log::error!("Can't add child without parent node")
         }
+    }
 
-        Tag::Image(_link_type, _dest, _title) =>
-        // TODO:
-        {
-            DomText::new("".to_string()).into()
-        }
-
-        Tag::FootnoteDefinition(_name) =>
-        // TODO:
-        {
-            DomText::new("".to_string()).into()
-        }
+    fn add_child_name(&mut self, child_name: impl Into<String>) {
+        self.add_child(DomElement::new(child_name.into()));
     }
 }
 
-fn generate_el(el: &'static str, children: Vec<DomNode>) -> DomNode {
-    DomElement::new(el).children(children).into()
-}
-
-fn generate_codeblock(
-    use_tag: &'static str,
-    info: CodeBlockKind,
-    children: Vec<DomNode>,
-) -> DomNode {
-    let code_attrs = match info {
-        CodeBlockKind::Indented => vec![],
-        CodeBlockKind::Fenced(info) => {
-            let lang = info.split(' ').next();
-            match lang {
-                Some("") | None => vec![],
-                Some(lang) => vec![("class", ["language-", lang].concat())],
-            }
-        }
-    };
-
-    DomElement::new(use_tag)
-        .attrs(code_attrs)
-        .children(children)
-        .into()
+/// Iterate over an iterator of pulldown's events, generate DomNode for each `Event`,
+/// structure it into DOM tree and return the root node.
+pub fn generate_tree<'a, I>(iter: I) -> DomNode
+where
+    I: Iterator<Item = Event<'a>>,
+{
+    VertigoWriter::new(iter).run()
 }
