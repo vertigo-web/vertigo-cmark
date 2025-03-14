@@ -7,5 +7,5 @@ license = "MIT OR Apache-2.0"
 description = "Allows to render CommonMark inside Vertigo tree"
 
 [dependencies]
-pulldown-cmark = "0.9"
+pulldown-cmark = "0.13"
 vertigo = ">=0.4"

@@ -1,13 +1,13 @@
-use pulldown_cmark::{Options, Parser};
-use vertigo::{DomElement, DomNode};
+pub use pulldown_cmark::Options;
+use pulldown_cmark::Parser;
+use vertigo::DomNode;
 
 mod generate;
-mod table_state;
 
 #[cfg(test)]
 mod tests;
 
-/// Converts a CommonMark string to Vertigo tree
+/// Converts a CommonMark string to Vertigo tree with default options.
 pub fn to_vertigo(text: &str) -> DomNode {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_TABLES);
@@ -16,19 +16,11 @@ pub fn to_vertigo(text: &str) -> DomNode {
     // opts.insert(Options::ENABLE_TASKLISTS);
     // opts.insert(Options::ENABLE_SMART_PUNCTUATION);
 
-    // Newlines will be removed by parser so add spaces
-    // to not have things glued accidentally
-    let text = text.replace('\n', " \n");
+    to_vertigo_opts(text, opts)
+}
 
-    let parser = Parser::new_ext(&text, opts);
-
-    let children = generate::generate_tree(parser);
-
-    let elem = DomElement::new("div");
-
-    for child in children {
-        elem.add_child(child);
-    }
-
-    elem.into()
+/// Converts a CommonMark string to Vertigo tree with provided [Options].
+pub fn to_vertigo_opts(text: &str, opts: Options) -> DomNode {
+    let parser = Parser::new_ext(text, opts);
+    generate::generate_tree(parser)
 }
