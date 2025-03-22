@@ -7,6 +7,9 @@ use pulldown_cmark::{
 use std::collections::{HashMap, VecDeque};
 use vertigo::{log, DomElement, DomNode, DomText};
 
+#[cfg(feature = "syntect")]
+use crate::highlighting::highlight;
+
 enum TableState {
     Head,
     Body,
@@ -26,6 +29,9 @@ struct VertigoWriter<'a, I> {
 
     // Stack of nested nodes
     soc: VecDeque<DomNode>,
+
+    #[cfg(feature = "syntect")]
+    in_code_block: Option<CowStr<'a>>,
 }
 
 impl<'a, I> VertigoWriter<'a, I>
@@ -41,13 +47,14 @@ where
             table_cell_index: 0,
             numbers: HashMap::new(),
             soc: VecDeque::new(),
+            #[cfg(feature = "syntect")]
+            in_code_block: None,
         }
     }
 
     fn run(mut self) -> DomNode {
         self.push_elname("div");
         while let Some(event) = self.iter.next() {
-            println!("Event: {:?}", event);
             match event {
                 Start(tag) => {
                     self.start_tag(tag);
@@ -57,6 +64,15 @@ where
                 }
                 Text(text) => {
                     if !self.in_non_writing_block {
+                        #[cfg(feature = "syntect")]
+                        if let Some(ref info) = self.in_code_block {
+                            for el in highlight(info, &text) {
+                                self.add_child(el)
+                            }
+                        } else {
+                            self.add_child(DomText::new(text));
+                        }
+                        #[cfg(not(feature = "syntect"))]
                         self.add_child(DomText::new(text));
                     }
                 }
@@ -182,6 +198,18 @@ where
                 }
                 self.push_node(element);
             }
+            #[cfg(feature = "syntect")]
+            Tag::CodeBlock(info) => {
+                if let CodeBlockKind::Fenced(info) = info {
+                    self.push_node(
+                        DomElement::new("pre")
+                            .attr("style", "background-color: black")
+                    );
+                    // TODO: info
+                    self.in_code_block = Some(info.clone());
+                }
+            }
+            #[cfg(not(feature = "syntect"))]
             Tag::CodeBlock(info) => {
                 self.push_elname("pre");
                 let element = DomElement::new("code");
@@ -295,9 +323,16 @@ where
                 self.table_cell_index += 1;
             }
             TagEnd::CodeBlock => {
-                // </code></pre>
+                // </code> or </code></pre>
                 self.pop_node();
-                self.pop_node();
+                #[cfg(feature = "syntect")]
+                {
+                    self.in_code_block = None;
+                }
+                #[cfg(not(feature = "syntect"))]
+                {
+                    self.pop_node();
+                }
             }
             TagEnd::TableRow
             | TagEnd::Paragraph

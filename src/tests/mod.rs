@@ -2,6 +2,12 @@ use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
 
 use crate::{to_vertigo, to_vertigo_opts};
 
+#[cfg(not(feature = "syntect"))]
+mod code;
+
+#[cfg(feature = "syntect")]
+mod code_highlighting;
+
 mod lists;
 mod table;
 
@@ -19,7 +25,7 @@ fn text() {
 }
 
 #[test]
-fn heading_rule_code() {
+fn heading_rule() {
     log_start();
     let _el1 = to_vertigo(r#"
 # Heading 1
@@ -29,10 +35,6 @@ foo
 ---
 
 bar
-
-```
-example
-```
 "#);
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
@@ -43,7 +45,6 @@ example
             <p>"foo"</p>
             <hr />
             <p>"bar"</p>
-            <pre><code>"example\n"</code></pre>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
@@ -253,37 +254,6 @@ fn all_headings() {
             <h4>"Heading 4"</h4>
             <h5>"Heading 5"</h5>
             <h6>"Heading 6"</h6>
-        </div>
-    };
-    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
-
-    assert_eq!(el1_str, el2_str);
-}
-
-#[test]
-fn codeblock() {
-    log_start();
-    let _el1 = to_vertigo(r#"
-Example of rust code:
-
-```rust
-let x = 2;
-let y = x + 1;
-```
-"#);
-    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
-
-    log_start();
-    let _el2 = dom! {
-        <div>
-            <p>"Example of rust code:"</p>
-            <pre>
-                <code class="language-rust">
-"let x = 2;
-let y = x + 1;
-"
-                </code>
-            </pre>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
