@@ -57,11 +57,12 @@ pub fn start_application() {
 - [x] Tables
 - [x] Blockquotes
 - [x] Codeblocks
+- [x] Code highlighting (with `syntect` feature)
 - [x] Lists (numbers, bullets)
 - [x] Rules
 - [x] Task list markers
+- [x] Footnotes
+- [x] Soft/hard breaks
+- [x] Links
+- [x] Images
 - [ ] Html
-- [ ] Footnotes
-- [ ] Soft/hard breaks
-- [ ] Links
-- [ ] Images

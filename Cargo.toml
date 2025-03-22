@@ -7,5 +7,6 @@ license = "MIT OR Apache-2.0"
 description = "Allows to render CommonMark inside Vertigo tree"
 
 [dependencies]
+syntect = { version = "5.2", default-features = false, features = ["default-fancy"], optional = true }
 pulldown-cmark = "0.13"
 vertigo = ">=0.4"
