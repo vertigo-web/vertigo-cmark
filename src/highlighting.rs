@@ -1,6 +1,6 @@
 use syntect::easy::HighlightLines;
-use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Color, FontStyle, Style, ThemeSet};
+use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 use vertigo::DomElement;
 
@@ -9,11 +9,14 @@ pub fn highlight(info: &str, s: &str) -> Vec<DomElement> {
     let ps = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
-    let syntax = ps.find_syntax_by_token(info).unwrap_or_else(|| ps.find_syntax_plain_text());
+    let syntax = ps
+        .find_syntax_by_token(info)
+        .unwrap_or_else(|| ps.find_syntax_plain_text());
     let mut h = HighlightLines::new(syntax, &ts.themes["base16-eighties.dark"]);
 
     let mut output = vec![];
-    for line in LinesWithEndings::from(s) { // LinesWithEndings enables use of newlines mode
+    for line in LinesWithEndings::from(s) {
+        // LinesWithEndings enables use of newlines mode
         let ranges: Vec<(Style, &str)> = h.highlight_line(line, &ps).unwrap();
         let line = generate_line(&ranges);
         output.extend(line);
