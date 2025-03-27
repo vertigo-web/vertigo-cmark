@@ -26,40 +26,40 @@ if x == 4 {
     let _el2 = dom! {
         <div>
             <p>"Example of rust code:"</p>
-            <pre style="background-color: black">
-                <span style="color: rgba(180, 142, 173, 255); background_color: rgba(43, 48, 59, 255)">"let"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" x "</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"="</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" "</span>
-                <span style="color: rgba(208, 135, 112, 255); background_color: rgba(43, 48, 59, 255)">"2"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" "</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"+"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" "</span>
-                <span style="color: rgba(208, 135, 112, 255); background_color: rgba(43, 48, 59, 255)">"2"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">";"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\n"</span>
-                <span style="color: rgba(180, 142, 173, 255); background_color: rgba(43, 48, 59, 255)">"if"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" x "</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"="</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"="</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" "</span>
-                <span style="color: rgba(208, 135, 112, 255); background_color: rgba(43, 48, 59, 255)">"4"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" "</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"{"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\n"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"    "</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"println!"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"("</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\""</span>
-                <span style="color: rgba(208, 135, 112, 255); background_color: rgba(43, 48, 59, 255)">"{}"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\""</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">","</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">" x"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">")"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">";"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\n"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"}"</span>
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"\n"</span>
+            <pre>
+                <span style="color: rgba(204, 153, 204, 255); background_color: rgba(45, 45, 45, 255)">"let"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" x "</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"="</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" "</span>
+                <span style="color: rgba(249, 145, 87, 255); background_color: rgba(45, 45, 45, 255)">"2"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" "</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"+"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" "</span>
+                <span style="color: rgba(249, 145, 87, 255); background_color: rgba(45, 45, 45, 255)">"2"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">";"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\n"</span>
+                <span style="color: rgba(204, 153, 204, 255); background_color: rgba(45, 45, 45, 255)">"if"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" x "</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"="</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"="</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" "</span>
+                <span style="color: rgba(249, 145, 87, 255); background_color: rgba(45, 45, 45, 255)">"4"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" "</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"{"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\n"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"    "</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"println!"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"("</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\""</span>
+                <span style="color: rgba(249, 145, 87, 255); background_color: rgba(45, 45, 45, 255)">"{}"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\""</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">","</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">" x"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">")"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">";"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\n"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"}"</span>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"\n"</span>
             </pre>
         </div>
     };
@@ -85,8 +85,8 @@ example
     let _el2 = dom! {
         <div>
             <p>"Example of unknown code:"</p>
-            <pre style="background-color: black">
-                <span style="color: rgba(192, 197, 206, 255); background_color: rgba(43, 48, 59, 255)">"example\n"</span>
+            <pre>
+                <span style="color: rgba(211, 208, 200, 255); background_color: rgba(45, 45, 45, 255)">"example\n"</span>
             </pre>
         </div>
     };

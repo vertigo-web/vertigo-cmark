@@ -1,20 +1,25 @@
-use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
+use vertigo::{
+    dom,
+    inspect::{log_start, DomDebugFragment},
+};
 
 use crate::to_vertigo;
 
 #[test]
 fn table_1() {
     log_start();
-    let _el1 = to_vertigo(r##" foo|bar
+    let _el1 = to_vertigo(
+        r##" foo|bar
  ---|---
  baz|bim
- "##);
+ "##,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
     let _el2 = dom! {
         <div>
-            <table border=1>
+            <table style="border: 1">
                 <thead>
                     <tr>
                         <th>"foo"</th>
@@ -38,19 +43,21 @@ fn table_1() {
 #[test]
 fn table_2() {
     log_start();
-    let _el1 = to_vertigo(r##"
+    let _el1 = to_vertigo(
+        r##"
 | Head cell  | Another      |
 | ---------- | ------------ |
 | Cell text  | Another cell |
 | More cells | *below...*   |
 | ```Inlines``` | __allowed__ |
-"##);
+"##,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
     let _el2 = dom! {
         <div>
-            <table border=1>
+            <table style="border: 1">
                 <thead>
                     <tr>
                         <th>"Head cell"</th>
@@ -82,14 +89,16 @@ fn table_2() {
 #[test]
 fn table_mixed() {
     log_start();
-    let _el1 = to_vertigo(r##"# Something
+    let _el1 = to_vertigo(
+        r##"# Something
 
 I'm saying something
 
 | Head 1 | Head 2 |
 | ------ | ------ |
 | Cell 1 | Cell 2 |
-"##);
+"##,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -97,7 +106,7 @@ I'm saying something
         <div>
             <h1>"Something"</h1>
             <p>"I'm saying something"</p>
-            <table border=1>
+            <table style="border: 1">
                 <thead>
                     <tr>
                         <th>"Head 1"</th>
