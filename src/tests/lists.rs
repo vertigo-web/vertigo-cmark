@@ -1,11 +1,15 @@
-use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
+use vertigo::{
+    dom,
+    inspect::{log_start, DomDebugFragment},
+};
 
-use crate::{Options, to_vertigo, to_vertigo_opts};
+use crate::{to_vertigo, to_vertigo_opts, Options};
 
 #[test]
 fn lists() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 Unordered list:
 
 - One
@@ -20,7 +24,8 @@ List continuation:
 
 3. Three
 4. Four
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -55,17 +60,19 @@ List continuation:
 
 #[test]
 fn definition_list() {
-    let mut opts = Options::empty();
-    opts.insert(Options::ENABLE_DEFINITION_LIST);
+    let opts = Options::ENABLE_DEFINITION_LIST;
 
     log_start();
-    let _el1 = to_vertigo_opts(r#"
+    let _el1 = to_vertigo_opts(
+        r#"
 Coffee
   : Black hot drink
 
 Milk
   : White cold drink
-"#, opts);
+"#,
+        opts,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -86,15 +93,17 @@ Milk
 
 #[test]
 fn task_list() {
-    let mut opts = Options::empty();
-    opts.insert(Options::ENABLE_TASKLISTS);
+    let opts = Options::ENABLE_TASKLISTS;
 
     log_start();
-    let _el1 = to_vertigo_opts(r#"
+    let _el1 = to_vertigo_opts(
+        r#"
 Implement in vertigo-cmark:
 
 - [x] Rendering CommonMark,
-- [ ] Frying pancakes."#, opts);
+- [ ] Frying pancakes."#,
+        opts,
+    );
 
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
@@ -118,4 +127,3 @@ Implement in vertigo-cmark:
 
     assert_eq!(el1_str, el2_str);
 }
-

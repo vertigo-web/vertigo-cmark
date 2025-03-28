@@ -1,4 +1,7 @@
-use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
+use vertigo::{
+    dom,
+    inspect::{log_start, DomDebugFragment},
+};
 
 use crate::{to_vertigo, to_vertigo_opts};
 
@@ -9,6 +12,7 @@ mod code;
 mod code_highlighting;
 
 mod lists;
+mod styling;
 mod table;
 
 #[test]
@@ -27,7 +31,8 @@ fn text() {
 #[test]
 fn heading_rule() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 # Heading 1
 
 foo
@@ -35,7 +40,8 @@ foo
 ---
 
 bar
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -81,9 +87,11 @@ fn text_italics_inline() {
 #[test]
 fn paragraph_line_join() {
     log_start();
-    let _el1 = to_vertigo(r#"Some text.
+    let _el1 = to_vertigo(
+        r#"Some text.
 Another line for the same paragraph.
-And another"#);
+And another"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -100,10 +108,12 @@ And another"#);
 #[test]
 fn two_paragraphs() {
     log_start();
-    let _el1 = to_vertigo(r#"Some text.
+    let _el1 = to_vertigo(
+        r#"Some text.
 
 Line for second paragraph.
-Another line of second paragraph."#);
+Another line of second paragraph."#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -121,11 +131,13 @@ Another line of second paragraph."#);
 #[test]
 fn two_paragraphs_2() {
     log_start();
-    let _el1 = to_vertigo(r#"Some text.
+    let _el1 = to_vertigo(
+        r#"Some text.
 Some more text.
 
 Line for second paragraph.
-Another line of second paragraph."#);
+Another line of second paragraph."#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -164,12 +176,15 @@ fn math() {
     opts.insert(Options::ENABLE_MATH);
 
     log_start();
-    let _el1 = to_vertigo_opts(r#"
+    let _el1 = to_vertigo_opts(
+        r#"
 Some $2+2=4$ equation.
 
 And more complex one:
 
-$$a^2 + 2b + c = 0$$"#, opts);
+$$a^2 + 2b + c = 0$$"#,
+        opts,
+    );
 
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
@@ -188,17 +203,18 @@ $$a^2 + 2b + c = 0$$"#, opts);
 
 #[test]
 fn footnotes() {
-    use super::Options;
-    let mut opts = Options::empty();
-    opts.insert(Options::ENABLE_FOOTNOTES);
+    let opts = super::Options::ENABLE_FOOTNOTES;
 
     log_start();
-    let _el1 = to_vertigo_opts(r#"
+    let _el1 = to_vertigo_opts(
+        r#"
 This is sentence with footnote[^1]. I hope it works[^2].
 
 [^1]: In fact, this is a footnote.
 
-[^2]: Or at least the test passes."#, opts);
+[^2]: Or at least the test passes."#,
+        opts,
+    );
 
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
@@ -230,7 +246,8 @@ This is sentence with footnote[^1]. I hope it works[^2].
 #[test]
 fn all_headings() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 # Heading 1
 
 ## Heading 2
@@ -242,7 +259,8 @@ fn all_headings() {
 ##### Heading 5
 
 ###### Heading 6
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -263,12 +281,11 @@ fn all_headings() {
 
 #[test]
 fn blockquote() {
-    use super::Options;
-    let mut opts = Options::empty();
-    opts.insert(Options::ENABLE_GFM);
+    let opts = super::Options::ENABLE_GFM;
 
     log_start();
-    let _el1 = to_vertigo_opts(r#"
+    let _el1 = to_vertigo_opts(
+        r#"
 Usual text for testing:
 
 > Lorem ipsum
@@ -287,7 +304,9 @@ Usual text for testing:
 
 > [!CAUTION]
 > dolor sit amet
-"#, opts);
+"#,
+        opts,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -322,7 +341,8 @@ Usual text for testing:
 #[test]
 fn link() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 [Vertigo Cmark](https://github.com/vertigo-web/vertigo-cmark)
 
 [Vertigo][vertigo]
@@ -330,7 +350,8 @@ fn link() {
 [do not email him](mailto:him@example.com)
 
 [vertigo]: https://github.com/vertigo-web/vertigo "Vertigo Code"
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
@@ -353,13 +374,15 @@ fn link() {
 #[test]
 fn image() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 ![This is a cat](cat.png)
 
 ![This is a dog][dog]
 
 [dog]: dog.jpg "An image of a dog"
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();

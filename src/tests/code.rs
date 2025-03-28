@@ -1,18 +1,23 @@
-use vertigo::{dom, inspect::{log_start, DomDebugFragment}};
+use vertigo::{
+    dom,
+    inspect::{log_start, DomDebugFragment},
+};
 
 use crate::to_vertigo;
 
 #[test]
 fn codeblock() {
     log_start();
-    let _el1 = to_vertigo(r#"
+    let _el1 = to_vertigo(
+        r#"
 Example of rust code:
 
 ```rust
 let x = 2;
 let y = x + 1;
 ```
-"#);
+"#,
+    );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
