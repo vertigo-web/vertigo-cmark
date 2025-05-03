@@ -28,8 +28,7 @@ fn blockquote() {
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
-    // autocss_1 because https://github.com/vertigo-web/vertigo/issues/335
-    let _el2 = dom! { <div><blockquote class="markdown-alert-warning autocss_1"><p>"dolor sit amet"</p></blockquote></div> };
+    let _el2 = dom! { <div><blockquote class="markdown-alert-warning" style="color: green"><p>"dolor sit amet"</p></blockquote></div> };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
 
     assert_eq!(el1_str, el2_str);
@@ -316,11 +315,11 @@ Lorem **ipsum** *dolor* sit[^1] ~amet~ ~~plumeth~~
                 "Lorem "
                 <strong style={STRONG_STYLE}>"ipsum"</strong>" "
                 <em style={EM_STYLE}>"dolor"</em>" sit"
-                <sup class="footnote-reference autocss_3"><a href="#1">"1"</a></sup>" "
+                <sup class="footnote-reference" style="color: gray"><a href="#1">"1"</a></sup>" "
                 <sub style={SUB_STYLE}>"amet"</sub>" "
                 <del style={DEL_STYLE}>"plumeth"</del>
             </p>
-            <div class="footnote-definition" id="1"><sup class="footnote-definition-label autocss_4">"1"</sup><p>"Legend"</p></div>
+            <div class="footnote-definition" id="1"><sup class="footnote-definition-label" style="color: blue">"1"</sup><p>"Legend"</p></div>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
