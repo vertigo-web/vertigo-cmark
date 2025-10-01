@@ -65,4 +65,4 @@ pub fn start_application() {
 - [x] Soft/hard breaks
 - [x] Links
 - [x] Images
-- [ ] Html
+- [x] Html
