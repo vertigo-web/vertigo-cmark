@@ -6,7 +6,12 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Allows to render CommonMark inside Vertigo tree"
 
+[features]
+default = ["html"]
+html = ["html5tokenizer"]
+
 [dependencies]
 syntect = { version = "5.2", default-features = false, features = ["default-fancy"], optional = true }
 pulldown-cmark = "0.13"
 vertigo = ">=0.7"
+html5tokenizer = { version = "0.5", optional = true }
