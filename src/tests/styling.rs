@@ -1,10 +1,9 @@
 use vertigo::{
-    dom,
-    inspect::{log_start, DomDebugFragment},
-    Css,
+    Css, dom,
+    inspect::{DomDebugFragment, log_start},
 };
 
-use crate::{to_vertigo_opts_styled, to_vertigo_styled, Options};
+use crate::{Options, to_vertigo_opts_styled, to_vertigo_styled};
 
 static TEST_STYLE: &str = "color: green";
 
