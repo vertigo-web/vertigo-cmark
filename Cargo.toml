@@ -1,10 +1,16 @@
 [package]
 name = "vertigo-cmark"
-version = "0.1.0-alpha.3"
-authors = ["Michal Pokrywka <wolfmoon@o2.pl>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
+version = "0.1.0"
+authors = ["Michał Pokrywka <wolfmoon@o2.pl>"]
 description = "Allows to render CommonMark inside Vertigo tree"
+readme = "README.md"
+keywords = ["wasm", "web", "reactive", "markdown", "commonmark"]
+homepage = "https://vertigo.znoj.pl"
+repository = "https://github.com/vertigo-web/vertigo-cmark"
+documentation = "https://docs.rs/vertigo-cmark/"
+categories = ["asynchronous", "gui", "wasm", "web-programming"]
+license = "MIT OR Apache-2.0"
+edition = "2024"
 
 [features]
 default = ["html"]

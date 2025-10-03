@@ -1,9 +1,9 @@
 use vertigo::{
     dom,
-    inspect::{log_start, DomDebugFragment},
+    inspect::{DomDebugFragment, log_start},
 };
 
-use crate::{to_vertigo, to_vertigo_opts, Options};
+use crate::{Options, to_vertigo, to_vertigo_opts};
 
 #[test]
 fn lists() {
