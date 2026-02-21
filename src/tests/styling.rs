@@ -1,6 +1,7 @@
 use vertigo::{
-    Css, dom,
-    inspect::{DomDebugFragment, log_start},
+    Css,
+    dev::inspect::{DomDebugFragment, log_start},
+    dom,
 };
 
 use crate::{Options, to_vertigo_opts_styled, to_vertigo_styled};
