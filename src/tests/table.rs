@@ -1,6 +1,6 @@
 use vertigo::{
+    dev::inspect::{DomDebugFragment, log_start},
     dom,
-    inspect::{DomDebugFragment, log_start},
 };
 
 use crate::to_vertigo;

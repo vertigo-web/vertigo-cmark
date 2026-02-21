@@ -19,5 +19,8 @@ html = ["html5tokenizer"]
 [dependencies]
 syntect = { version = "5.2", default-features = false, features = ["default-fancy"], optional = true }
 pulldown-cmark = "0.13"
-vertigo = ">=0.7"
+# vertigo = ">=0.7"
+# vertigo = { path = "../vertigo/crates/vertigo" }
+vertigo = { git = "https://github.com/vertigo-web/vertigo", branch = "master" }
+
 html5tokenizer = { version = "0.5", optional = true }
