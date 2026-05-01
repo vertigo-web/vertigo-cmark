@@ -20,7 +20,7 @@ use writer::VertigoWriter;
 /// structure it into DOM tree and return the root node.
 pub fn generate_tree<'a, I>(iter: I, styling: CMarkStyle) -> DomNode
 where
-    I: Iterator<Item = Event<'a>>,
+    I: Iterator<Item = Event<'a>> + 'a,
 {
-    VertigoWriter::new(iter, styling).run()
+    VertigoWriter::new(Box::new(iter), styling).run()
 }
