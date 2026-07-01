@@ -2,7 +2,7 @@
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
 
-## Unreleased
+## 0.1.2 - 2027-07-01
 
 ### Added
 
