@@ -1,6 +1,11 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
+## 0.1.3 - 2027-09-08
+
+### Changed
+
+* Upgrade to vertigo 0.13, minimal compatible version is 0.10.1
 
 ## 0.1.2 - 2027-07-01
 

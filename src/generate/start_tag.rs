@@ -35,7 +35,7 @@ where
                 };
                 let element = DomElement::new(el_name);
                 if let Some(id) = id {
-                    element.add_attr("id", id);
+                    element.add_attr("id", id.as_ref());
                 }
                 if !classes.is_empty() {
                     let value = classes.join(" ");
@@ -135,7 +135,7 @@ where
                 };
                 let element = DomElement::new("a").attr("href", [prefix, dest_url].concat());
                 if !title.is_empty() {
-                    element.add_attr("title", title);
+                    element.add_attr("title", title.as_ref());
                 }
                 self.push_element_styled(element, &styling.a);
             }
@@ -146,14 +146,14 @@ where
                 id: _,
             } => {
                 let mut element = DomElement::new("img")
-                    .attr("src", dest_url)
+                    .attr("src", dest_url.as_ref())
                     .attr("alt", self.raw_text());
 
                 if !styling.img.groups.is_empty() {
                     element = element.css(&styling.img);
                 }
                 if !title.is_empty() {
-                    element.add_attr("title", title);
+                    element.add_attr("title", title.as_ref());
                 }
                 self.add_child(element);
             }
@@ -169,7 +169,7 @@ where
                 self.push_node(
                     DomElement::new("div")
                         .attr("class", "footnote-definition")
-                        .attr("id", name)
+                        .attr("id", name.as_ref())
                         .child(sup_element),
                 );
             }
