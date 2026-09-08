@@ -5,7 +5,7 @@ Converts CommonMark string into rendered vertigo DomElement.
 [![crates.io](https://img.shields.io/crates/v/vertigo-cmark)](https://crates.io/crates/vertigo-cmark)
 [![Documentation](https://docs.rs/vertigo-cmark/badge.svg)](https://docs.rs/vertigo-cmark)
 ![MIT or Apache 2.0 licensed](https://img.shields.io/crates/l/vertigo-cmark.svg)
-[![Dependency Status](https://deps.rs/crate/vertigo-cmark/0.1.2/status.svg)](https://deps.rs/crate/vertigo-cmark/0.1.2)
+[![Dependency Status](https://deps.rs/crate/vertigo-cmark/0.1.3/status.svg)](https://deps.rs/crate/vertigo-cmark/0.1.3)
 [![CI](https://github.com/vertigo-web/vertigo-cmark/actions/workflows/pipeline.yaml/badge.svg)](https://github.com/vertigo-web/vertigo-cmark/actions/workflows/pipeline.yaml)
 [![downloads](https://img.shields.io/crates/d/vertigo-cmark.svg)](https://crates.io/crates/vertigo-cmark)
 
