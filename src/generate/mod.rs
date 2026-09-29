@@ -3,7 +3,7 @@
 use pulldown_cmark::Event;
 use vertigo::DomNode;
 
-use crate::styling::CMarkStyle;
+use crate::{policy::HtmlPolicy, styling::CMarkStyle};
 
 #[cfg(feature = "html")]
 mod html;
@@ -17,10 +17,11 @@ mod writer;
 use writer::VertigoWriter;
 
 /// Iterate over an iterator of pulldown's events, generate DomNode for each `Event`,
-/// structure it into DOM tree and return the root node.
-pub fn generate_tree<'a, I>(iter: I, styling: CMarkStyle) -> DomNode
+/// structure it into DOM tree and return the root node. Raw HTML and link destinations go
+/// through the `policy`.
+pub fn generate_tree<'a, I>(iter: I, styling: CMarkStyle, policy: &'a dyn HtmlPolicy) -> DomNode
 where
     I: Iterator<Item = Event<'a>> + 'a,
 {
-    VertigoWriter::new(Box::new(iter), styling).run()
+    VertigoWriter::new(Box::new(iter), styling, policy).run()
 }

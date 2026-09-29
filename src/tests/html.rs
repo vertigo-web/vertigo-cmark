@@ -48,7 +48,7 @@ fn anchor_with_cmark_works() {
 
 <a href="mailto:him@example.com">Do not email him</a>
 
-<a href="https://github.com/vertigo-web/vertigo" target="_blank">Vertigo Code</a>
+<a href="https://github.com/vertigo-web/vertigo" title="Vertigo">Vertigo Code</a>
 "#,
     );
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
@@ -58,7 +58,7 @@ fn anchor_with_cmark_works() {
         <div>
             <p><a href="https://github.com/vertigo-web/vertigo-cmark">"Vertigo <strong>Cmark</strong>"</a></p>
             <p><a href="mailto:him@example.com">"Do not email him"</a></p>
-            <p><a href="https://github.com/vertigo-web/vertigo" target="_blank">"Vertigo Code"</a></p>
+            <p><a href="https://github.com/vertigo-web/vertigo" title="Vertigo">"Vertigo Code"</a></p>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
@@ -175,13 +175,13 @@ fn end_tag_does_not_close_markdown_element() {
 #[test]
 fn unclosed_block_closes_with_document() {
     log_start();
-    let _el1 = to_vertigo("<div class=\"box\">\n\nInside\n");
+    let _el1 = to_vertigo("<div title=\"box\">\n\nInside\n");
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
     let _el2 = dom! {
         <div>
-            <div class="box">"\n"<p>"Inside"</p></div>
+            <div title="box">"\n"<p>"Inside"</p></div>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();
@@ -192,13 +192,13 @@ fn unclosed_block_closes_with_document() {
 #[test]
 fn text_line_of_html_block() {
     log_start();
-    let _el1 = to_vertigo("<div class=\"box\">\nText in block\n</div>");
+    let _el1 = to_vertigo("<div title=\"box\">\nText in block\n</div>");
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
     let _el2 = dom! {
         <div>
-            <div class="box">"\n""Text in block\n"</div>
+            <div title="box">"\n""Text in block\n"</div>
         </div>
     };
     let el2_str = DomDebugFragment::from_log().to_pseudo_html();

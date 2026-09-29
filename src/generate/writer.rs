@@ -7,7 +7,7 @@ use std::{
 };
 use vertigo::{Css, DomElement, DomNode, log};
 
-use crate::styling::CMarkStyle;
+use crate::{policy::HtmlPolicy, styling::CMarkStyle};
 
 pub(super) enum TableState {
     Head,
@@ -35,7 +35,16 @@ pub(super) struct VertigoWriter<'a, I> {
     #[cfg(feature = "html")]
     pub(super) html_open: Vec<(String, usize)>,
 
+    /// Inside an element of raw HTML removed with its content: its name and how many elements
+    /// of the same name opened inside it. Nothing but the structure of the document gets out
+    /// until its end tag.
+    #[cfg(feature = "html")]
+    pub(super) removing: Option<(String, usize)>,
+
     pub(super) styling: Rc<CMarkStyle>,
+
+    /// What of raw HTML and link destinations gets into the tree.
+    pub(super) policy: &'a dyn HtmlPolicy,
 
     #[cfg(feature = "syntect")]
     pub(super) in_code_block: Option<CowStr<'a>>,
@@ -45,7 +54,7 @@ impl<'a, I> VertigoWriter<'a, I>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    pub fn new(iter: I, styling: CMarkStyle) -> Self {
+    pub fn new(iter: I, styling: CMarkStyle, policy: &'a dyn HtmlPolicy) -> Self {
         Self {
             iter,
             in_non_writing_block: false,
@@ -56,10 +65,21 @@ where
             soc: VecDeque::new(),
             #[cfg(feature = "html")]
             html_open: vec![],
+            #[cfg(feature = "html")]
+            removing: None,
             styling: Rc::new(styling),
+            policy,
             #[cfg(feature = "syntect")]
             in_code_block: None,
         }
+    }
+
+    /// Whether the content of an element removed by the policy is going on.
+    pub(super) fn removing(&self) -> bool {
+        #[cfg(feature = "html")]
+        return self.removing.is_some();
+        #[cfg(not(feature = "html"))]
+        false
     }
 
     pub(super) fn push_node(&mut self, node: impl Into<DomNode>) {

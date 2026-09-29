@@ -133,11 +133,18 @@ where
                     LinkType::Email => "mailto:",
                     _ => "",
                 };
-                let element = DomElement::new("a").attr("href", [prefix, dest_url].concat());
-                if !title.is_empty() {
-                    element.add_attr("title", title.as_ref());
+                let url = [prefix, dest_url].concat();
+                match self.policy.destination(&url, false) {
+                    Some(url) => {
+                        let element = DomElement::new("a").attr("href", url.as_ref());
+                        if !title.is_empty() {
+                            element.add_attr("title", title.as_ref());
+                        }
+                        self.push_element_styled(element, &styling.a);
+                    }
+                    // the text stays, without the link
+                    None => self.push_node(DomElement::new("span")),
                 }
-                self.push_element_styled(element, &styling.a);
             }
             Tag::Image {
                 link_type: _,
@@ -145,9 +152,20 @@ where
                 title,
                 id: _,
             } => {
+                let alt = self.raw_text();
+                if self.removing() {
+                    return;
+                }
+                let Some(src) = self.policy.destination(dest_url, true) else {
+                    // the description stays instead of the image
+                    if !alt.is_empty() {
+                        self.add_child(DomText::new(alt));
+                    }
+                    return;
+                };
                 let mut element = DomElement::new("img")
-                    .attr("src", dest_url.as_ref())
-                    .attr("alt", self.raw_text());
+                    .attr("src", src.as_ref())
+                    .attr("alt", alt);
 
                 if !styling.img.groups.is_empty() {
                     element = element.css(&styling.img);
