@@ -227,3 +227,30 @@ fn image() {
 
     assert_eq!(el1_str, el2_str);
 }
+
+#[test]
+fn from_events() {
+    use pulldown_cmark::{Event, Parser, Tag, TagEnd};
+
+    use crate::{CMarkStyle, events_to_vertigo};
+
+    log_start();
+    let events = Parser::new("Visit [example](https://example.com) now").filter(|event| {
+        !matches!(
+            event,
+            Event::Start(Tag::Link { .. }) | Event::End(TagEnd::Link)
+        )
+    });
+    let _el1 = events_to_vertigo(events, CMarkStyle::default());
+    let el1_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    log_start();
+    let _el2 = dom! {
+        <div>
+            <p>"Visit ""example"" now"</p>
+        </div>
+    };
+    let el2_str = DomDebugFragment::from_log().to_pseudo_html();
+
+    assert_eq!(el1_str, el2_str);
+}

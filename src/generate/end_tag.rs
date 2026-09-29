@@ -13,30 +13,30 @@ where
             TagEnd::HtmlBlock => {}
             TagEnd::Table => {
                 // </tbody></table>
-                self.pop_node();
-                self.pop_node();
+                self.pop_markdown_node();
+                self.pop_markdown_node();
             }
             TagEnd::TableHead => {
                 // </tr></thead><tbody>
-                self.pop_node();
-                self.pop_node();
+                self.pop_markdown_node();
+                self.pop_markdown_node();
                 self.push_elname("tbody", &self.styling.clone().tbody);
                 self.table_state = TableState::Body;
             }
             TagEnd::TableCell => {
-                self.pop_node();
+                self.pop_markdown_node();
                 self.table_cell_index += 1;
             }
             TagEnd::CodeBlock => {
                 // </code> or </code></pre>
-                self.pop_node();
+                self.pop_markdown_node();
                 #[cfg(feature = "syntect")]
                 {
                     self.in_code_block = None;
                 }
                 #[cfg(not(feature = "syntect"))]
                 {
-                    self.pop_node();
+                    self.pop_markdown_node();
                 }
             }
             TagEnd::TableRow
@@ -55,7 +55,7 @@ where
             | TagEnd::Strikethrough
             | TagEnd::Link
             | TagEnd::FootnoteDefinition => {
-                self.pop_node();
+                self.pop_markdown_node();
             }
             TagEnd::Image => {} // shouldn't happen, handled in start
             TagEnd::MetadataBlock(_) => {

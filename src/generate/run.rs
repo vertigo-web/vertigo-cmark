@@ -98,6 +98,10 @@ where
                 }
             }
         }
+        // raw HTML left open closes together with the document
+        while self.soc.len() > 1 {
+            self.pop_node();
+        }
         self.pop_node().unwrap_or_else(|| {
             log::error!("Popping nesting did not produce root node!");
             DomElement::new("div").into()
