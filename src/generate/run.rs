@@ -15,6 +15,11 @@ where
     pub(super) fn run(mut self) -> DomNode {
         self.push_element_styled(DomElement::new("div"), &self.styling.clone().container);
         while let Some(event) = self.iter.next() {
+            // inside an element removed with its content only the structure of the document
+            // (and raw HTML with the end tag) goes on
+            if self.removing() && !matches!(event, Start(_) | End(_) | Html(_) | InlineHtml(_)) {
+                continue;
+            }
             match event {
                 Start(tag) => {
                     self.start_tag(tag);

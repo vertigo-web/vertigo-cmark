@@ -77,4 +77,65 @@ pub fn start_application() {
 - [x] Soft/hard breaks
 - [x] Links
 - [x] Images
-- [x] Html (with `html` feature)
+- [x] Html (with `html` feature), sanitized by default
+
+## Security
+
+Markdown can carry raw HTML and links to any address, and vertigo-cmark builds
+DOM from them directly — there is no HTML string to clean afterwards. So by
+default everything goes through `SafeHtml`: elements and attributes from
+`ammonia`'s default whitelist and links and images only with safe schemes.
+Scripts, styles, event handlers, frames, forms and `javascript:` addresses
+don't get into the page, so rendering text from users is safe.
+
+For content you control, `TrustedHtml` renders everything as written. Anything
+in between is an own `HtmlPolicy` — usually delegating to `SafeHtml` all but
+a few elements:
+
+```rust
+use std::borrow::Cow;
+use vertigo_cmark::{
+    CMarkStyle, ElementAction, HtmlPolicy, SafeHtml, events_to_vertigo,
+    pulldown_cmark::Parser,
+};
+
+/// Safe HTML plus YouTube players.
+struct WithVideos;
+
+impl HtmlPolicy for WithVideos {
+    fn element(&self, name: &str) -> ElementAction {
+        match name {
+            "iframe" => ElementAction::Keep,
+            name => SafeHtml.element(name),
+        }
+    }
+
+    fn attribute<'v>(
+        &self,
+        element: &str,
+        name: &str,
+        value: &'v str,
+    ) -> Option<Cow<'v, str>> {
+        match (element, name) {
+            ("iframe", "src") => value
+                .starts_with("https://www.youtube.com/embed/")
+                .then_some(Cow::Borrowed(value)),
+            _ => SafeHtml.attribute(element, name, value),
+        }
+    }
+
+    fn destination<'u>(
+        &self,
+        url: &'u str,
+        image: bool,
+    ) -> Option<Cow<'u, str>> {
+        SafeHtml.destination(url, image)
+    }
+}
+
+let content = events_to_vertigo(
+    Parser::new(CONTENT),
+    CMarkStyle::default(),
+    &WithVideos,
+);
+```

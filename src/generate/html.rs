@@ -4,6 +4,7 @@ use pulldown_cmark::Event;
 use vertigo::{DomElement, DomNode, log};
 
 use super::VertigoWriter;
+use crate::policy::ElementAction;
 
 /// Elements without content and end tag — `<br>` or `<img src="…">` don't open anything,
 /// even without `/>`.
@@ -39,15 +40,47 @@ where
             }
         };
 
+        let policy = self.policy;
         for token in NaiveParser::new(&input.to_string()).flatten() {
+            if let Some((removed, nested)) = &mut self.removing {
+                match &token {
+                    Token::StartTag(tag)
+                        if tag.name == *removed && !VOID_ELEMENTS.contains(&tag.name.as_str()) =>
+                    {
+                        *nested += 1;
+                    }
+                    Token::EndTag(tag) if tag.name == *removed => match nested {
+                        0 => self.removing = None,
+                        nested => *nested -= 1,
+                    },
+                    _ => {}
+                }
+                continue;
+            }
             match token {
                 Token::StartTag(tag) => {
                     consume_chars(self, &mut chars);
-                    let void = tag.self_closing || VOID_ELEMENTS.contains(&tag.name.as_str());
-                    let name = (!void).then(|| tag.name.clone());
-                    let v_el = DomElement::new(tag.name);
+                    let void = VOID_ELEMENTS.contains(&tag.name.as_str());
+                    match policy.element(&tag.name) {
+                        ElementAction::Keep => {}
+                        // end tag of an unwrapped element has nothing to close and is skipped
+                        ElementAction::Unwrap => continue,
+                        // browsers don't close `<script />` — its content goes on until
+                        // `</script>` anyway
+                        ElementAction::Remove => {
+                            if !void {
+                                self.removing = Some((tag.name, 0));
+                            }
+                            continue;
+                        }
+                    }
+                    let empty = void || tag.self_closing;
+                    let name = (!empty).then(|| tag.name.clone());
+                    let v_el = DomElement::new(tag.name.clone());
                     for attr in tag.attributes {
-                        v_el.add_attr(attr.name, attr.value);
+                        if let Some(value) = policy.attribute(&tag.name, &attr.name, &attr.value) {
+                            v_el.add_attr(attr.name, value.into_owned());
+                        }
                     }
                     self.push_node(v_el);
 

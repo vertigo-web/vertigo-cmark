@@ -15,6 +15,7 @@ mod code_highlighting;
 mod html;
 
 mod lists;
+mod security;
 mod styling;
 mod table;
 mod typesetting;
@@ -232,7 +233,7 @@ fn image() {
 fn from_events() {
     use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
-    use crate::{CMarkStyle, events_to_vertigo};
+    use crate::{CMarkStyle, SafeHtml, events_to_vertigo};
 
     log_start();
     let events = Parser::new("Visit [example](https://example.com) now").filter(|event| {
@@ -241,7 +242,7 @@ fn from_events() {
             Event::Start(Tag::Link { .. }) | Event::End(TagEnd::Link)
         )
     });
-    let _el1 = events_to_vertigo(events, CMarkStyle::default());
+    let _el1 = events_to_vertigo(events, CMarkStyle::default(), &SafeHtml);
     let el1_str = DomDebugFragment::from_log().to_pseudo_html();
 
     log_start();
