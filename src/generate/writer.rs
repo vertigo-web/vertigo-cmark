@@ -29,6 +29,12 @@ pub(super) struct VertigoWriter<'a, I> {
     // Stack of nested nodes
     pub(super) soc: VecDeque<DomNode>,
 
+    /// Elements opened by raw HTML and not closed yet, with the stack depth right after each
+    /// one was pushed. Raw HTML closes only its own elements, and a markdown element closes
+    /// raw HTML left open inside it, so a stray or missing end tag can't break the tree.
+    #[cfg(feature = "html")]
+    pub(super) html_open: Vec<(String, usize)>,
+
     pub(super) styling: Rc<CMarkStyle>,
 
     #[cfg(feature = "syntect")]
@@ -48,6 +54,8 @@ where
             table_cell_index: 0,
             numbers: HashMap::new(),
             soc: VecDeque::new(),
+            #[cfg(feature = "html")]
+            html_open: vec![],
             styling: Rc::new(styling),
             #[cfg(feature = "syntect")]
             in_code_block: None,
@@ -91,6 +99,20 @@ where
             }
         }
         None
+    }
+
+    /// Pops node pushed for a markdown element, closing first raw HTML left open inside it.
+    pub(super) fn pop_markdown_node(&mut self) -> Option<DomNode> {
+        #[cfg(feature = "html")]
+        while self
+            .html_open
+            .last()
+            .is_some_and(|(_, depth)| *depth == self.soc.len())
+        {
+            self.html_open.pop();
+            self.pop_node();
+        }
+        self.pop_node()
     }
 
     pub(super) fn add_child(&mut self, child: impl Into<DomNode>) {

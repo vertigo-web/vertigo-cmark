@@ -1,6 +1,22 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
+## Unreleased
+
+### Added
+
+* `events_to_vertigo` renders a stream of pulldown-cmark events, so the caller can adjust them
+  first (drop unsafe links, sanitize raw HTML, turn a link into an embed); `pulldown_cmark`
+  is re-exported
+
+### Fixed
+
+* Raw HTML: void elements without `/>` (`<br>`, `<img src="…">`) no longer swallow the rest
+  of the document, which rendered as an empty `div`
+* Raw HTML: an end tag without its start tag no longer closes the markdown element around it,
+  and tags left open close with their markdown element or the document
+* Raw HTML: text after the last tag in an HTML event (a line of an HTML block) is kept
+
 ## 0.1.3 - 2027-09-08
 
 ### Changed
