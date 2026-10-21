@@ -1,7 +1,7 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
-## Unreleased
+## 0.1.4 - 2026-10-21
 
 ### Security
 
@@ -14,6 +14,8 @@
 
 ### Changed
 
+* Upgrade to vertigo 0.14
+* `syntect` feature requires syntect 5.3
 * **Breaking:** `to_vertigo` and its variants render raw HTML and links through
   `SafeHtml`, so elements and attributes outside its whitelist (`class`,
   `style`, `target`, `<iframe>`…) are dropped. `TrustedHtml` renders everything
@@ -37,13 +39,13 @@
 * Raw HTML: text after the last tag in an HTML event (a line of an HTML block)
   is kept
 
-## 0.1.3 - 2027-09-08
+## 0.1.3 - 2026-09-08
 
 ### Changed
 
 * Upgrade to vertigo 0.13, minimal compatible version is 0.10.1
 
-## 0.1.2 - 2027-07-01
+## 0.1.2 - 2026-07-01
 
 ### Added
 
