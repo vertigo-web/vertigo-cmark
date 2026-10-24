@@ -5,6 +5,7 @@ use vertigo::DomNode;
 mod generate;
 mod policy;
 mod styling;
+pub mod table_spans;
 pub use policy::{ElementAction, HtmlPolicy, SafeHtml, TrustedHtml, is_safe_url};
 pub use styling::CMarkStyle;
 

@@ -1,10 +1,10 @@
 // Based on https://github.com/pulldown-cmark/pulldown-cmark/blob/master/pulldown-cmark/src/html.rs
 
 use pulldown_cmark::Event;
-use vertigo::{DomElement, DomNode, log};
+use vertigo::{Css, DomElement, DomNode, log};
 
 use super::VertigoWriter;
-use crate::policy::ElementAction;
+use crate::{CMarkStyle, policy::ElementAction};
 
 /// Elements without content and end tag — `<br>` or `<img src="…">` don't open anything,
 /// even without `/>`.
@@ -12,6 +12,10 @@ const VOID_ELEMENTS: &[&str] = &[
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track",
     "wbr",
 ];
+
+/// Elements of a table holding rows or cells, not text — white space between their tags
+/// is no content of theirs, as browsers parse HTML.
+const TABLE_STRUCTURE: &[&str] = &["table", "thead", "tbody", "tfoot", "tr"];
 
 impl<'a, I> VertigoWriter<'a, I>
 where
@@ -25,6 +29,9 @@ where
         let consume_chars = |myself: &mut Self, chars: &mut Vec<char>| {
             if !chars.is_empty() {
                 let inner_text: String = chars.drain(..).collect();
+                if inner_text.trim().is_empty() && myself.in_table_structure() {
+                    return;
+                }
                 if let Some(node) = myself.soc.front_mut() {
                     match node {
                         DomNode::Node { node } => {
@@ -82,7 +89,12 @@ where
                             v_el.add_attr(attr.name, value.into_owned());
                         }
                     }
-                    self.push_node(v_el);
+                    // a table of raw HTML looks like a markdown one
+                    let styling = self.styling.clone();
+                    match table_style(&styling, &tag.name) {
+                        Some(css) => self.push_element_styled(v_el, css),
+                        None => self.push_node(v_el),
+                    }
 
                     match name {
                         Some(name) => self.html_open.push((name, self.soc.len())),
@@ -105,6 +117,13 @@ where
         consume_chars(self, &mut chars);
     }
 
+    /// Whether the innermost element is a raw HTML table's, holding rows or cells.
+    fn in_table_structure(&self) -> bool {
+        self.html_open.last().is_some_and(|(name, depth)| {
+            *depth == self.soc.len() && TABLE_STRUCTURE.contains(&name.as_str())
+        })
+    }
+
     /// Closes element opened by raw HTML, together with raw HTML still open inside it.
     /// End tag without a start tag — or with a markdown element opened after it — is ignored,
     /// so it can't close the markdown element it sits in.
@@ -121,5 +140,18 @@ where
             self.pop_node();
         }
         self.html_open.truncate(position);
+    }
+}
+
+/// The style of a table's element from [`CMarkStyle`], for the same element of raw HTML.
+fn table_style<'s>(styling: &'s CMarkStyle, name: &str) -> Option<&'s Css> {
+    match name {
+        "table" => Some(&styling.table),
+        "thead" => Some(&styling.thead),
+        "tbody" => Some(&styling.tbody),
+        "tr" => Some(&styling.tr),
+        "th" => Some(&styling.th),
+        "td" => Some(&styling.td),
+        _ => None,
     }
 }
