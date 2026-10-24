@@ -1,6 +1,22 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
+## Unreleased
+
+### Added
+
+* `table_spans`: tables with merged cells — MultiMarkdown's `||` (`colspan`)
+  and `^^` (`rowspan`) — and with several header rows or none. `events` gives
+  a document's events with such tables as raw HTML around the events of their
+  cells, for `events_to_vertigo` and `push_html` alike; `Table` reads them and
+  writes them back with the columns lined up
+
+### Changed
+
+* Raw HTML tables get the table styles of `CMarkStyle`, like markdown tables
+* White space between the rows and cells of a raw HTML table is no longer
+  a text node, as browsers parse HTML
+
 ## 0.1.4 - 2026-10-21
 
 ### Security

@@ -18,6 +18,7 @@ mod lists;
 mod security;
 mod styling;
 mod table;
+mod table_spans;
 mod typesetting;
 
 #[test]

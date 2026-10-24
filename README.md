@@ -66,6 +66,7 @@ fn app() -> DomNode {
 - [x] Headings
 - [x] Paragraphs
 - [x] Tables
+- [x] Tables with merged cells and several header rows (`table_spans`)
 - [x] Blockquotes
 - [x] Codeblocks
 - [x] Code highlighting (with `syntect` feature)
@@ -138,3 +139,37 @@ let content = events_to_vertigo(
     &WithVideos,
 );
 ```
+
+## Tables with merged cells
+
+GFM tables have one header row and no merged cells. `table_spans` adds
+MultiMarkdown's syntax: an empty cell without a space (`||`) joins the cell on
+its left, a cell of `^^` joins the one above, and every row above the delimiter
+row belongs to the header — or none, when the delimiter row comes first.
+
+```text
+| Row | Valid votes             || Amount per vote |
+| ^^  | percent | number of votes | ^^              |
+| --- | ------- | --------------- | --------------- |
+| 1   | to 5%   |                 | 5.77            |
+```
+
+pulldown-cmark's events can't carry `colspan` or `rowspan`, so
+`table_spans::events` gives the document's events with such tables as raw HTML
+around the events of their cells. Both `events_to_vertigo` (with the `html`
+feature) and `pulldown_cmark::html::push_html` render them:
+
+```rust
+use vertigo_cmark::{
+    CMarkStyle, SafeHtml, events_to_vertigo, pulldown_cmark::Options, table_spans,
+};
+
+let content = events_to_vertigo(
+    table_spans::events(CONTENT, Options::ENABLE_TABLES),
+    CMarkStyle::default(),
+    &SafeHtml,
+);
+```
+
+`table_spans::Table` reads such a table (`parse`) and writes it back with the
+columns lined up (`write`) — e.g. for an editor.
