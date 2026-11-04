@@ -94,10 +94,7 @@ a few elements:
 
 ```rust
 use std::borrow::Cow;
-use vertigo_cmark::{
-    CMarkStyle, ElementAction, HtmlPolicy, SafeHtml, events_to_vertigo,
-    pulldown_cmark::Parser,
-};
+use vertigo_cmark::{ElementAction, HtmlPolicy, SafeHtml, to_vertigo_with_policy};
 
 /// Safe HTML plus YouTube players.
 struct WithVideos;
@@ -133,12 +130,12 @@ impl HtmlPolicy for WithVideos {
     }
 }
 
-let content = events_to_vertigo(
-    Parser::new(CONTENT),
-    CMarkStyle::default(),
-    &WithVideos,
-);
+let content = to_vertigo_with_policy(CONTENT, &WithVideos);
 ```
+
+`to_vertigo_with_policy` renders as `to_vertigo` does, tables included. For
+other options or styling, or events adjusted first, pass the policy to
+`events_to_vertigo`.
 
 ## Tables with merged cells
 

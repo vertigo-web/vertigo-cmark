@@ -5,11 +5,20 @@ use vertigo::{
     dom,
 };
 
-use crate::{CMarkStyle, HtmlPolicy, TrustedHtml, events_to_vertigo, is_safe_url, to_vertigo};
+use crate::{
+    CMarkStyle, HtmlPolicy, TrustedHtml, events_to_vertigo, is_safe_url, to_vertigo,
+    to_vertigo_with_policy,
+};
 
 fn rendered(text: &str) -> String {
     log_start();
     let _node = to_vertigo(text);
+    DomDebugFragment::from_log().to_pseudo_html()
+}
+
+fn rendered_with_policy(text: &str, policy: &dyn HtmlPolicy) -> String {
+    log_start();
+    let _node = to_vertigo_with_policy(text, policy);
     DomDebugFragment::from_log().to_pseudo_html()
 }
 
@@ -98,6 +107,24 @@ fn unsafe_image_becomes_its_description() {
 fn trusted_html_keeps_every_link() {
     assert_eq!(
         rendered_with("[y](javascript:alert(2))", &TrustedHtml),
+        expected(|| dom! {
+            <div>
+                <p><a href="javascript:alert(2)">"y"</a></p>
+            </div>
+        })
+    );
+}
+
+#[test]
+fn with_policy_enables_tables_as_to_vertigo() {
+    let html = rendered_with_policy("| a | b |\n|---|---|\n| 1 | 2 |", &TrustedHtml);
+    assert!(html.contains("<table"), "{html}");
+}
+
+#[test]
+fn with_policy_filters_through_the_policy() {
+    assert_eq!(
+        rendered_with_policy("[y](javascript:alert(2))", &TrustedHtml),
         expected(|| dom! {
             <div>
                 <p><a href="javascript:alert(2)">"y"</a></p>
@@ -295,6 +322,41 @@ mod raw_html {
                 &WithVideos
             ),
             expected(|| dom! { <div><iframe></iframe></div> })
+        );
+    }
+
+    /// Safe HTML, links keeping `target="_blank"`.
+    struct NewTabLinks;
+
+    impl HtmlPolicy for NewTabLinks {
+        fn element(&self, name: &str) -> ElementAction {
+            SafeHtml.element(name)
+        }
+
+        fn attribute<'v>(&self, element: &str, name: &str, value: &'v str) -> Option<Cow<'v, str>> {
+            match (element, name, value) {
+                ("a", "target", "_blank") => Some(Cow::Borrowed(value)),
+                _ => SafeHtml.attribute(element, name, value),
+            }
+        }
+
+        fn destination<'u>(&self, url: &'u str, image: bool) -> Option<Cow<'u, str>> {
+            SafeHtml.destination(url, image)
+        }
+    }
+
+    #[test]
+    fn with_policy_keeps_what_the_policy_lets_in() {
+        assert_eq!(
+            rendered_with_policy(
+                r#"<a href="/x" target="_blank" onclick="alert(1)">x</a> <a href="/y" target="_top">y</a>"#,
+                &NewTabLinks
+            ),
+            expected(|| dom! {
+                <div>
+                    <p><a href="/x" target="_blank">"x"</a>" "<a href="/y">"y"</a></p>
+                </div>
+            })
         );
     }
 }
