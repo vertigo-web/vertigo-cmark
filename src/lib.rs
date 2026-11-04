@@ -20,9 +20,49 @@ mod tests;
 /// NOTE: Tables are enabled by default.
 ///
 /// Raw HTML and link destinations are filtered by [`SafeHtml`], so the text may come
-/// from anyone — see [`HtmlPolicy`] for other policies.
+/// from anyone — see [`to_vertigo_with_policy`] for other policies.
 pub fn to_vertigo(text: &str) -> DomNode {
-    to_vertigo_opts(text, Options::ENABLE_TABLES)
+    to_vertigo_with_policy(text, &SafeHtml)
+}
+
+/// Converts a CommonMark string to Vertigo tree with default options and styling, as
+/// [`to_vertigo`] does, but with raw HTML and link destinations filtered by the provided
+/// [policy](HtmlPolicy): [`TrustedHtml`] only for content you control, or your own.
+///
+/// For other options or styling, or events adjusted before rendering, see [`events_to_vertigo`].
+///
+/// ```
+/// use std::borrow::Cow;
+/// use vertigo_cmark::{ElementAction, HtmlPolicy, SafeHtml, to_vertigo_with_policy};
+///
+/// /// Safe HTML, links keeping `target="_blank"`.
+/// struct NewTabLinks;
+///
+/// impl HtmlPolicy for NewTabLinks {
+///     fn element(&self, name: &str) -> ElementAction {
+///         SafeHtml.element(name)
+///     }
+///
+///     fn attribute<'v>(&self, element: &str, name: &str, value: &'v str) -> Option<Cow<'v, str>> {
+///         match (element, name, value) {
+///             ("a", "target", "_blank") => Some(Cow::Borrowed(value)),
+///             _ => SafeHtml.attribute(element, name, value),
+///         }
+///     }
+///
+///     fn destination<'u>(&self, url: &'u str, image: bool) -> Option<Cow<'u, str>> {
+///         SafeHtml.destination(url, image)
+///     }
+/// }
+///
+/// let _node = to_vertigo_with_policy(
+///     r#"See <a href="https://example.com/" target="_blank">this</a>"#,
+///     &NewTabLinks,
+/// );
+/// ```
+pub fn to_vertigo_with_policy(text: &str, policy: &dyn HtmlPolicy) -> DomNode {
+    let parser = Parser::new_ext(text, Options::ENABLE_TABLES);
+    generate::generate_tree(parser, CMarkStyle::default(), policy)
 }
 
 /// Converts a CommonMark string to Vertigo tree with provided [Options] and default styling.

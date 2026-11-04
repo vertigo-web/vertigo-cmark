@@ -10,6 +10,10 @@
   a document's events with such tables as raw HTML around the events of their
   cells, for `events_to_vertigo` and `push_html` alike; `Table` reads them and
   writes them back with the columns lined up
+* `to_vertigo_with_policy` renders a string as `to_vertigo` does — tables
+  enabled, default styling — with a given `HtmlPolicy` instead of `SafeHtml`,
+  e.g. to keep `target="_blank"` on links, without building the events for
+  `events_to_vertigo`
 
 ### Changed
 
