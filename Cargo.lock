@@ -18,10 +18,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws-lc-rs"
-version = "1.18.2"
+name = "ar_archive_writer"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faac5829c2b74c28f830747e7818ccfb684261b5f48a1118b1e2a13d36dfab13"
+checksum = "73cd58deff2140a0a8eae87e417bd01db68a33e148aa93d1e8cd837e55e312b6"
+dependencies = [
+ "object",
+]
+
+[[package]]
+name = "aws-lc-rs"
+version = "1.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "048006790404103c488e6c5616b3e7e702a71292aadda08e8f7698a9e0d2eb53"
 dependencies = [
  "aws-lc-sys",
  "zeroize",
@@ -29,9 +38,9 @@ dependencies = [
 
 [[package]]
 name = "aws-lc-sys"
-version = "0.46.0"
+version = "0.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1622d8446a2d4b2ce0c7eefc73dd43a99779028d5ee5c2dd8073a658ba8a2bc"
+checksum = "8bfbe32ac36b3c428696ce315464181bc4029d689fd58e3f2a4e58c252242f52"
 dependencies = [
  "cc",
  "cmake",
@@ -78,9 +87,9 @@ checksum = "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
 
 [[package]]
 name = "cc"
-version = "1.9.0"
+version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877bf67ac8e52449eb2f9e98a344ea163beb70dd1f9eebe3cc5357dcfeaee4df"
+checksum = "4ff2a8126fff0f8c839080d619675a585e61720bb12d2baceae45769fd66f155"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -120,9 +129,9 @@ checksum = "217698eaf96b4a3f0bc4f3662aaa55bdf913cd54d7204591faa790070c6d0853"
 
 [[package]]
 name = "crc32fast"
-version = "1.5.3"
+version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ba106e844045ddc02c20768ac4b0b7cb45f2cc2ecbd833ac9f5dacb183c2055"
+checksum = "5f97d3416d5337d15c4b0d78c8c91df922ca143f57ec20e2d1c188333047ef04"
 dependencies = [
  "cfg-if",
 ]
@@ -215,9 +224,9 @@ checksum = "1c66915cc5391097de7a2b0b972e8505aa33c0df401fd3a6811dbdb32881ba48"
 
 [[package]]
 name = "flate2"
-version = "1.1.10"
+version = "1.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb"
+checksum = "626d4928326b646e70f65ed36fc7cf9f206bdb68a0019ee7c6b4709da4e084c4"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -331,9 +340,9 @@ checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "log"
-version = "0.4.34"
+version = "0.4.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
+checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 
 [[package]]
 name = "memchr"
@@ -369,6 +378,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521739c6d2bac4aa25192232afe6841231376b2b26d4d9fae5ecf8ca5772e441"
 
 [[package]]
+name = "object"
+version = "0.39.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e5a6c098c7a3b6547378093f5cc30bc54fd361ce711e05293a5cc589562739b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -376,21 +394,20 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "pest"
-version = "2.9.4"
+version = "2.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd47a460a9cbc3b3429c7e22bf0d76653e779319bae45a499ca010c9a990bb23"
+checksum = "a8db75153506001cb36ed924f08cadc862eb3f8c4d0d534139f29074769d7660"
 dependencies = [
  "memchr",
- "psm",
- "stacker",
+ "pest_stack_guard",
  "ucd-trie",
 ]
 
 [[package]]
 name = "pest_derive"
-version = "2.9.4"
+version = "2.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "203e46697708f7519ab1608393cf89239cafb46b8e6d08a8ffe359359b11ef44"
+checksum = "20aa17e11fb35664b67d5214a0afac57a360d231b6ec53d6eba0700b27d933b4"
 dependencies = [
  "pest",
  "pest_generator",
@@ -398,9 +415,9 @@ dependencies = [
 
 [[package]]
 name = "pest_generator"
-version = "2.9.4"
+version = "2.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e84ae6340a458d3d6cfc73cf328cf3cfe90b2484cd0de25eb66aa954615ed4d5"
+checksum = "626ec5afccf44ccbfeb2b232316510bb55b4bf34d891afcb0fb07d2b17d7fe9d"
 dependencies = [
  "pest",
  "pest_meta",
@@ -411,11 +428,21 @@ dependencies = [
 
 [[package]]
 name = "pest_meta"
-version = "2.9.4"
+version = "2.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b57f92f32b3dbce6598fd8f5cdf1f06a6072570b8103fa21728fa9036923e710"
+checksum = "b3f45b6caa65c1b08186832745159c2529994146340a7bf44168095469720f5d"
 dependencies = [
  "pest",
+]
+
+[[package]]
+name = "pest_stack_guard"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ac6154fd4418b8f0b82532c59c26f303f9ca59a64c883e8ce3971fd82733439"
+dependencies = [
+ "psm",
+ "stacker",
 ]
 
 [[package]]
@@ -515,18 +542,19 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.24"
+version = "0.1.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "200b9ff220857e53e184257720a14553b2f4aa02577d2ed9842d45d4b9654810"
+checksum = "4dcd034599e63b970727f70d79e02d62390a4a84f7c6b827c27c46d5ac3fa622"
 dependencies = [
+ "ar_archive_writer",
  "cc",
 ]
 
 [[package]]
 name = "pulldown-cmark"
-version = "0.13.4"
+version = "0.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9f068eba8e7071c5f9511831b44f32c740d5adf574e990f946ddb53db2f314e"
+checksum = "3db2be46835f013dd3f4fa7f5f7402c537787b54ebb6fe2b94bbdd7e2669bb7b"
 dependencies = [
  "bitflags",
  "memchr",
@@ -857,9 +885,9 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vertigo"
-version = "0.14.0"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87586caeb933546dc19bfde5bb88e639044a36faea9083128e1c65a614a29fac"
+checksum = "37e66391bb246812a7ab5b8c52c13bdf302351f1b784f48d2261f86b1d8957d4"
 dependencies = [
  "base64",
  "log",
@@ -868,7 +896,7 @@ dependencies = [
 
 [[package]]
 name = "vertigo-cmark"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "html5tokenizer",
  "pulldown-cmark",
@@ -878,9 +906,9 @@ dependencies = [
 
 [[package]]
 name = "vertigo-macro"
-version = "0.14.0"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dd14f22039bebec91f02c38ab2fd06295435d22b9708637b0ecc05b7b043e5e"
+checksum = "60141d8e261b688e24e4f9e15a5bc6691317dc81ee90561ab9b66ba5f9d737c0"
 dependencies = [
  "base64",
  "crc",
@@ -916,9 +944,9 @@ checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.10"
+version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9"
+checksum = "f5f280bbb2b287bc8e7de7e3852945a0ff50d1bbcb5ed42b6c7a568c546df171"
 dependencies = [
  "rustls-pki-types",
 ]

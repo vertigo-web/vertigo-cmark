@@ -1,25 +1,19 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
-## Unreleased
+## 0.1.5 - 2026-11-06
 
 ### Added
 
-* `table_spans`: tables with merged cells — MultiMarkdown's `||` (`colspan`)
-  and `^^` (`rowspan`) — and with several header rows or none. `events` gives
-  a document's events with such tables as raw HTML around the events of their
-  cells, for `events_to_vertigo` and `push_html` alike; `Table` reads them and
-  writes them back with the columns lined up
-* `to_vertigo_with_policy` renders a string as `to_vertigo` does — tables
-  enabled, default styling — with a given `HtmlPolicy` instead of `SafeHtml`,
-  e.g. to keep `target="_blank"` on links, without building the events for
-  `events_to_vertigo`
+* `table_spans`: tables with merged cells (MultiMarkdown's `||` and `^^`) and
+  several header rows or none; `events` renders them, `Table` parses and writes
+* `to_vertigo_with_policy`: `to_vertigo` with a given `HtmlPolicy`
 
 ### Changed
 
 * Raw HTML tables get the table styles of `CMarkStyle`, like markdown tables
 * White space between the rows and cells of a raw HTML table is no longer
-  a text node, as browsers parse HTML
+  a text node
 
 ## 0.1.4 - 2026-10-21
 

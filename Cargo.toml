@@ -1,6 +1,6 @@
 [package]
 name = "vertigo-cmark"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Michał Pokrywka <wolfmoon@o2.pl>"]
 description = "Allows to render CommonMark inside Vertigo tree"
 keywords = ["wasm", "web", "reactive", "markdown", "commonmark"]
