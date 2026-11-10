@@ -78,6 +78,7 @@ fn app() -> DomNode {
 - [x] Links
 - [x] Images
 - [x] Html (with `html` feature), sanitized by default
+- [x] Metadata block (front matter, `---` YAML or `+++` TOML), read apart and not rendered
 
 ## Security
 

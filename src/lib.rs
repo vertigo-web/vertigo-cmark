@@ -3,9 +3,11 @@ use pulldown_cmark::{Event, Parser};
 use vertigo::DomNode;
 
 mod generate;
+mod metadata;
 mod policy;
 mod styling;
 pub mod table_spans;
+pub use metadata::{METADATA_OPTIONS, Metadata, metadata};
 pub use policy::{ElementAction, HtmlPolicy, SafeHtml, TrustedHtml, is_safe_url};
 pub use styling::CMarkStyle;
 
@@ -63,6 +65,22 @@ pub fn to_vertigo(text: &str) -> DomNode {
 pub fn to_vertigo_with_policy(text: &str, policy: &dyn HtmlPolicy) -> DomNode {
     let parser = Parser::new_ext(text, Options::ENABLE_TABLES);
     generate::generate_tree(parser, CMarkStyle::default(), policy)
+}
+
+/// Converts a document that may start with a metadata block (front matter) to Vertigo tree,
+/// as [`to_vertigo`] does, and returns the block apart, see [`metadata`]. The block itself is
+/// not rendered.
+///
+/// ```
+/// use vertigo_cmark::to_vertigo_with_metadata;
+///
+/// let (metadata, _node) = to_vertigo_with_metadata("---\ntitle: The cave\n---\n\nText");
+/// assert_eq!(metadata.unwrap().text, "title: The cave\n");
+/// ```
+pub fn to_vertigo_with_metadata(text: &str) -> (Option<Metadata>, DomNode) {
+    let parser = Parser::new_ext(text, Options::ENABLE_TABLES | METADATA_OPTIONS);
+    let node = generate::generate_tree(parser, CMarkStyle::default(), &SafeHtml);
+    (metadata(text), node)
 }
 
 /// Converts a CommonMark string to Vertigo tree with provided [Options] and default styling.
