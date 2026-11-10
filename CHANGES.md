@@ -1,6 +1,17 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
+## Unreleased
+
+### Added
+
+* `metadata`: the metadata block (front matter) a document starts with, `---`
+  fences around YAML or `+++` fences around TOML, as written, for the app's own
+  parser
+* `to_vertigo_with_metadata`: `to_vertigo` for a document that may start with a
+  metadata block, which it returns apart instead of rendering
+* `METADATA_OPTIONS`: the parser options that recognize both kinds of blocks
+
 ## 0.1.5 - 2026-11-06
 
 ### Added
