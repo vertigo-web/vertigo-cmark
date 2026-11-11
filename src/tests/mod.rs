@@ -15,6 +15,7 @@ mod code_highlighting;
 mod html;
 
 mod lists;
+mod metadata;
 mod security;
 mod styling;
 mod table;
