@@ -133,7 +133,7 @@ fn with_policy_filters_through_the_policy() {
     );
 }
 
-#[cfg(feature = "html")]
+#[cfg(any(feature = "html", feature = "simple_html"))]
 mod raw_html {
     use std::borrow::Cow;
 

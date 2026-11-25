@@ -1,6 +1,18 @@
 <!-- markdownlint-configure-file { "no-duplicate-heading": { "siblings_only": true } } -->
 
 <!-- markdownlint-disable-next-line first-line-h1 -->
+## Unreleased
+
+### Added
+
+* `simple_html` feature: raw HTML read by a small tokenizer of this crate's instead
+  of `html5tokenizer`, which is about 155 KB of an app's wasm, most of it the
+  table of HTML's 2231 named character references. It reads tags, attributes,
+  comments, numeric character references and the common named ones (`&nbsp;`,
+  `&amp;`, `&mdash;`…); another named one stays as it is written. For it turn
+  the default features off: `default-features = false, features = ["simple_html"]`.
+  Everything still goes through the `HtmlPolicy`
+
 ## 0.1.6 - 2026-11-16
 
 ### Added

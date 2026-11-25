@@ -270,7 +270,7 @@ fn table_right_under_a_paragraph() {
     );
 }
 
-#[cfg(feature = "html")]
+#[cfg(any(feature = "html", feature = "simple_html"))]
 #[test]
 fn rendered_like_markdown_tables() {
     let style = CMarkStyle {
