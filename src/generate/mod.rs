@@ -5,8 +5,13 @@ use vertigo::DomNode;
 
 use crate::{policy::HtmlPolicy, styling::CMarkStyle};
 
-#[cfg(feature = "html")]
+#[cfg(any(feature = "html", feature = "simple_html"))]
 mod html;
+
+// Compiled for the tests of `html` too, which compare it with html5tokenizer there
+#[cfg(any(feature = "simple_html", test))]
+#[cfg_attr(feature = "html", allow(dead_code))]
+mod simple_html;
 
 mod end_tag;
 mod raw_text;

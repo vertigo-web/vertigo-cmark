@@ -22,7 +22,12 @@ where
     I: Iterator<Item = Event<'a>>,
 {
     pub(super) fn html(&mut self, input: &str) {
+        #[cfg(feature = "html")]
         use html5tokenizer::{NaiveParser, Token};
+
+        // The small tokenizer of `simple_html`, whose tokens have the shape of html5tokenizer's
+        #[cfg(not(feature = "html"))]
+        use super::simple_html::{Token, tokens};
 
         let mut chars: Vec<char> = vec![];
 
@@ -48,7 +53,14 @@ where
         };
 
         let policy = self.policy;
-        for token in NaiveParser::new(&input.to_string()).flatten() {
+        #[cfg(feature = "html")]
+        let input = input.to_string();
+        #[cfg(feature = "html")]
+        let tokens = NaiveParser::new(&input).flatten();
+        #[cfg(not(feature = "html"))]
+        let tokens = tokens(input);
+
+        for token in tokens {
             if let Some((removed, nested)) = &mut self.removing {
                 match &token {
                     Token::StartTag(tag)
@@ -110,6 +122,8 @@ where
                 Token::Char(x) => {
                     chars.push(x);
                 }
+                // The small tokenizer gives none of these
+                #[cfg(feature = "html")]
                 Token::EndOfFile | Token::Comment(_) | Token::Doctype(_) => {}
             }
         }

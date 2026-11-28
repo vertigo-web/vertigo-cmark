@@ -58,9 +58,9 @@ where
                     self.add_child(element);
                 }
                 Html(html) | InlineHtml(html) => {
-                    #[cfg(feature = "html")]
+                    #[cfg(any(feature = "html", feature = "simple_html"))]
                     self.html(&html);
-                    #[cfg(not(feature = "html"))]
+                    #[cfg(not(any(feature = "html", feature = "simple_html")))]
                     let _ = html;
                 }
                 SoftBreak => {

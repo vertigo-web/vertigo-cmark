@@ -78,7 +78,33 @@ fn app() -> DomNode {
 - [x] Links
 - [x] Images
 - [x] Html (with `html` feature), sanitized by default
+- [x] Html read by a small tokenizer (`simple_html` feature instead of `html`), for
+  hand-written HTML: about 150 KB less wasm, see below
 - [x] Metadata block (front matter, `---` YAML or `+++` TOML), read apart and not rendered
+
+## Raw HTML and the size of the wasm
+
+The `html` feature, on by default, reads raw HTML with `html5tokenizer`, as browsers read it.
+That is about 155 KB of an app's wasm (~30KB brotli), most of it the table
+of HTML's 2231 named character references.
+
+For HTML written by hand, the `simple_html` feature reads it with a small tokenizer of this
+crate's instead:
+
+```toml
+vertigo-cmark = { version = "0.1", default-features = false, features = ["simple_html"] }
+```
+
+It knows tags, attributes, comments, numeric character references (`&#233;`, `&#xE9;`) and
+the common named ones (`&amp;`, `&lt;`, `&nbsp;`, `&mdash;`, `&copy;`…). What it leaves out:
+
+- another named character reference, f. ex. `&eacute;`, stays as it is written
+- a numeric reference into the C1 controls, f. ex. `&#150;`, is that control and not the
+  Windows-1252 character browsers make of it
+- a malformed tag may come out as other tags and text than in a browser
+
+Whichever reads, every element and attribute goes through the `HtmlPolicy`. With both
+features on, `html` reads.
 
 ## Security
 

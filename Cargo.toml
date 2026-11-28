@@ -13,7 +13,13 @@ edition = "2024"
 
 [features]
 default = ["html"]
+# Raw HTML in markdown, read as browsers read it, with every named character reference.
+# About 155 KB of an app's wasm: see `simple_html` for hand-written HTML.
 html = ["pulldown-cmark/html", "html5tokenizer"]
+# Raw HTML in markdown read by a small tokenizer of this crate's, a few KB of wasm: tags,
+# attributes, comments, numeric character references and the common named ones. For it,
+# turn the default features off. With `html` on too, `html` is what reads.
+simple_html = []
 
 [dependencies]
 syntect = { version = "5.3", default-features = false, features = ["default-fancy"], optional = true }

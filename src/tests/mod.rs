@@ -11,7 +11,7 @@ mod code;
 #[cfg(feature = "syntect")]
 mod code_highlighting;
 
-#[cfg(feature = "html")]
+#[cfg(any(feature = "html", feature = "simple_html"))]
 mod html;
 
 mod lists;

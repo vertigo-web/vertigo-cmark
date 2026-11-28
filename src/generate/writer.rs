@@ -32,13 +32,13 @@ pub(super) struct VertigoWriter<'a, I> {
     /// Elements opened by raw HTML and not closed yet, with the stack depth right after each
     /// one was pushed. Raw HTML closes only its own elements, and a markdown element closes
     /// raw HTML left open inside it, so a stray or missing end tag can't break the tree.
-    #[cfg(feature = "html")]
+    #[cfg(any(feature = "html", feature = "simple_html"))]
     pub(super) html_open: Vec<(String, usize)>,
 
     /// Inside an element of raw HTML removed with its content: its name and how many elements
     /// of the same name opened inside it. Nothing but the structure of the document gets out
     /// until its end tag.
-    #[cfg(feature = "html")]
+    #[cfg(any(feature = "html", feature = "simple_html"))]
     pub(super) removing: Option<(String, usize)>,
 
     pub(super) styling: Rc<CMarkStyle>,
@@ -63,9 +63,9 @@ where
             table_cell_index: 0,
             numbers: HashMap::new(),
             soc: VecDeque::new(),
-            #[cfg(feature = "html")]
+            #[cfg(any(feature = "html", feature = "simple_html"))]
             html_open: vec![],
-            #[cfg(feature = "html")]
+            #[cfg(any(feature = "html", feature = "simple_html"))]
             removing: None,
             styling: Rc::new(styling),
             policy,
@@ -76,9 +76,9 @@ where
 
     /// Whether the content of an element removed by the policy is going on.
     pub(super) fn removing(&self) -> bool {
-        #[cfg(feature = "html")]
+        #[cfg(any(feature = "html", feature = "simple_html"))]
         return self.removing.is_some();
-        #[cfg(not(feature = "html"))]
+        #[cfg(not(any(feature = "html", feature = "simple_html")))]
         false
     }
 
@@ -123,7 +123,7 @@ where
 
     /// Pops node pushed for a markdown element, closing first raw HTML left open inside it.
     pub(super) fn pop_markdown_node(&mut self) -> Option<DomNode> {
-        #[cfg(feature = "html")]
+        #[cfg(any(feature = "html", feature = "simple_html"))]
         while self
             .html_open
             .last()
